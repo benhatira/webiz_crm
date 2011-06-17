@@ -46,7 +46,7 @@ function webiz_crm_cron() {
 function webiz_crm_syn_data() {
   $last_update = variable_get('webiz_crm_last_update', 0);
   $webiz_domain = variable_get('webiz_crm_sync_host', 'webiz.co.th');
-  $requesturl = "http://" .$webiz_domain .":8888/api/export/user?last_update=".$last_update; 
+  $requesturl = "http://" .$webiz_domain ."/api/export/user?last_update=".$last_update; 
   $recievehttp =  drupal_http_request($requesturl);//
   if($recievehttp->code != 200) {drupal_set_message('Webiz sync data : Error code :'.$recievehttp->code.'=>'.$recievehttp->error,'error');return;}
   //variable_set('webiz_crm_last_update' , time());
