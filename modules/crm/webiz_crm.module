@@ -61,7 +61,7 @@ function webiz_crm_syn_data() {
       //echo "found";
       $node = node_load($row['nid']);
       $value['partner_reference'] = $node->field_customer_partner_ref[0]['value'];
-      echo "<pre>";print_r($node);echo "</pre>";exit;
+      //echo "<pre>";print_r($node);echo "</pre>";exit;
     } else {
       //echo "not found";
       $node = new stdClass();$node->type = 'customer';
@@ -142,7 +142,7 @@ function webiz_crm_GTBO_xml_post($GTBO_array) {
    * Check for errors
    */
    $result = curl_exec($ch); 
-   echo $result; exit;
+   //echo $result; exit;
   if ( curl_errno($ch) ) {
       $result = 'ERROR -> ' . curl_errno($ch) . ': ' . curl_error($ch).'';
   } else {
