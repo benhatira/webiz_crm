@@ -50,7 +50,7 @@ function webiz_crm_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'ที่อยู่',
-      'weight' => '8',
+      'weight' => '25',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -356,7 +356,57 @@ function webiz_crm_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'แคมเปญ',
-      'weight' => '18',
+      'weight' => '25',
+      'description' => '',
+      'type' => 'text_textfield',
+      'module' => 'text',
+    ),
+  );
+
+  // Exported field: field_customer_custom_domain
+  $fields['customer-field_customer_custom_domain'] = array(
+    'field_name' => 'field_customer_custom_domain',
+    'type_name' => 'customer',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'text',
+    'required' => '0',
+    'multiple' => '0',
+    'module' => 'text',
+    'active' => '1',
+    'text_processing' => '0',
+    'max_length' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => '',
+    'widget' => array(
+      'rows' => 5,
+      'size' => '60',
+      'default_value' => array(
+        '0' => array(
+          'value' => '',
+          '_error_element' => 'default_value_widget][field_customer_custom_domain][0][value',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'ชื่อโดเมน',
+      'weight' => '22',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -407,58 +457,7 @@ function webiz_crm_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'เขต/อำเภอ',
-      'weight' => '10',
-      'description' => '',
-      'type' => 'text_textfield',
-      'module' => 'text',
-    ),
-  );
-
-  // Exported field: field_customer_domain
-  $fields['customer-field_customer_domain'] = array(
-    'field_name' => 'field_customer_domain',
-    'type_name' => 'customer',
-    'display_settings' => array(
-      'weight' => '17',
-      'parent' => 'group_webiz',
-      'label' => array(
-        'format' => 'above',
-      ),
-      'teaser' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      'full' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      '4' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-    ),
-    'widget_active' => '1',
-    'type' => 'text',
-    'required' => '0',
-    'multiple' => '0',
-    'module' => 'text',
-    'active' => '1',
-    'text_processing' => '0',
-    'max_length' => '',
-    'allowed_values' => '',
-    'allowed_values_php' => '',
-    'widget' => array(
-      'rows' => 5,
-      'size' => '60',
-      'default_value' => array(
-        '0' => array(
-          'value' => '',
-          '_error_element' => 'default_value_widget][field_customer_domain][0][value',
-        ),
-      ),
-      'default_value_php' => NULL,
-      'label' => 'ชื่อโดเมน',
-      'weight' => '17',
+      'weight' => '27',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -509,7 +508,7 @@ function webiz_crm_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'อีเมล',
-      'weight' => '16',
+      'weight' => '23',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -560,7 +559,7 @@ function webiz_crm_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'ละติจูด',
-      'weight' => '13',
+      'weight' => '30',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -611,16 +610,16 @@ function webiz_crm_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'ลองจิจูด',
-      'weight' => '14',
+      'weight' => '31',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
     ),
   );
 
-  // Exported field: field_customer_partner_reference
-  $fields['customer-field_customer_partner_reference'] = array(
-    'field_name' => 'field_customer_partner_reference',
+  // Exported field: field_customer_partner_ref
+  $fields['customer-field_customer_partner_ref'] = array(
+    'field_name' => 'field_customer_partner_ref',
     'type_name' => 'customer',
     'display_settings' => array(
       'label' => array(
@@ -656,13 +655,13 @@ function webiz_crm_content_default_fields() {
       'default_value' => array(
         '0' => array(
           'value' => '',
-          '_error_element' => 'default_value_widget][field_customer_partner_reference][0][value',
+          '_error_element' => 'default_value_widget][field_customer_partner_ref][0][value',
         ),
       ),
       'default_value_php' => NULL,
       'label' => 'Partner Reference',
-      'weight' => 0,
-      'description' => 'For GTBO campaign',
+      'weight' => '21',
+      'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
     ),
@@ -712,7 +711,7 @@ function webiz_crm_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'เบอร์โทรศัพท์',
-      'weight' => '15',
+      'weight' => '24',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -763,10 +762,120 @@ function webiz_crm_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'จังหวัด',
-      'weight' => '12',
+      'weight' => '29',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
+    ),
+  );
+
+  // Exported field: field_customer_register_ref
+  $fields['customer-field_customer_register_ref'] = array(
+    'field_name' => 'field_customer_register_ref',
+    'type_name' => 'customer',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'text',
+    'required' => '0',
+    'multiple' => '0',
+    'module' => 'text',
+    'active' => '1',
+    'text_processing' => '0',
+    'max_length' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => '',
+    'widget' => array(
+      'rows' => 5,
+      'size' => '60',
+      'default_value' => array(
+        '0' => array(
+          'value' => '',
+          '_error_element' => 'default_value_widget][field_customer_register_ref][0][value',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'Register reference',
+      'weight' => '20',
+      'description' => '',
+      'type' => 'text_textfield',
+      'module' => 'text',
+    ),
+  );
+
+  // Exported field: field_customer_signup_date
+  $fields['customer-field_customer_signup_date'] = array(
+    'field_name' => 'field_customer_signup_date',
+    'type_name' => 'customer',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'datestamp',
+    'required' => '0',
+    'multiple' => '0',
+    'module' => 'date',
+    'active' => '1',
+    'granularity' => array(
+      'year' => 'year',
+      'month' => 'month',
+      'day' => 'day',
+      'hour' => 'hour',
+      'minute' => 'minute',
+    ),
+    'timezone_db' => 'UTC',
+    'tz_handling' => 'site',
+    'todate' => '',
+    'repeat' => 0,
+    'repeat_collapsed' => '',
+    'default_format' => 'medium',
+    'widget' => array(
+      'default_value' => 'blank',
+      'default_value_code' => '',
+      'default_value2' => 'same',
+      'default_value_code2' => '',
+      'input_format' => 'm/d/Y - H:i:s',
+      'input_format_custom' => '',
+      'increment' => '1',
+      'text_parts' => array(),
+      'year_range' => '-3:+3',
+      'label_position' => 'above',
+      'label' => 'Sign-up date',
+      'weight' => '32',
+      'description' => '',
+      'type' => 'date_select',
+      'module' => 'date',
     ),
   );
 
@@ -814,7 +923,57 @@ function webiz_crm_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'แขวง/ตำบล',
-      'weight' => '9',
+      'weight' => '26',
+      'description' => '',
+      'type' => 'text_textfield',
+      'module' => 'text',
+    ),
+  );
+
+  // Exported field: field_customer_webiz_domain
+  $fields['customer-field_customer_webiz_domain'] = array(
+    'field_name' => 'field_customer_webiz_domain',
+    'type_name' => 'customer',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'text',
+    'required' => '0',
+    'multiple' => '0',
+    'module' => 'text',
+    'active' => '1',
+    'text_processing' => '0',
+    'max_length' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => '',
+    'widget' => array(
+      'rows' => 5,
+      'size' => '60',
+      'default_value' => array(
+        '0' => array(
+          'value' => '',
+          '_error_element' => 'default_value_widget][field_customer_webiz_domain][0][value',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'เว็บบิซโดเมน',
+      'weight' => '23',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -864,7 +1023,7 @@ function webiz_crm_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'เลขไอดีผู้ใช้',
-      'weight' => '19',
+      'weight' => '26',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -915,7 +1074,7 @@ function webiz_crm_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'รหัสไปรษณีย์',
-      'weight' => '11',
+      'weight' => '28',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -925,6 +1084,8 @@ function webiz_crm_content_default_fields() {
   // Translatables
   array(
     t('Partner Reference'),
+    t('Register reference'),
+    t('Sign-up date'),
     t('จังหวัด'),
     t('ชื่อ-นามสกุล'),
     t('ชื่อโดเมน'),
@@ -938,6 +1099,7 @@ function webiz_crm_content_default_fields() {
     t('เขต/อำเภอ'),
     t('เบอร์โทรศัพท์'),
     t('เลขไอดีผู้ใช้'),
+    t('เว็บบิซโดเมน'),
     t('แขวง/ตำบล'),
     t('แคมเปญ'),
   );

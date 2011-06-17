@@ -110,15 +110,15 @@ function webiz_crm_fieldgroup_default_groups() {
     ),
     'weight' => '-1',
     'fields' => array(
-      '0' => 'field_customer_address',
-      '1' => 'field_customer_subdistrict',
-      '2' => 'field_customer_district',
-      '3' => 'field_customer_zipcode',
-      '4' => 'field_customer_province',
-      '5' => 'field_customer_latitude',
-      '6' => 'field_customer_longitude',
-      '7' => 'field_customer_phone',
-      '8' => 'field_customer_email',
+      '0' => 'field_customer_email',
+      '1' => 'field_customer_phone',
+      '2' => 'field_customer_address',
+      '3' => 'field_customer_subdistrict',
+      '4' => 'field_customer_district',
+      '5' => 'field_customer_zipcode',
+      '6' => 'field_customer_province',
+      '7' => 'field_customer_latitude',
+      '8' => 'field_customer_longitude',
     ),
   );
 
@@ -153,9 +153,10 @@ function webiz_crm_fieldgroup_default_groups() {
     ),
     'weight' => '-4',
     'fields' => array(
-      '0' => 'field_customer_domain',
-      '1' => 'field_customer_campaign',
-      '2' => 'field_customer_webiz_id',
+      '0' => 'field_customer_custom_domain',
+      '1' => 'field_customer_webiz_domain',
+      '2' => 'field_customer_campaign',
+      '3' => 'field_customer_webiz_id',
     ),
   );
 
