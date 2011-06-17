@@ -1,0 +1,178 @@
+<?php
+
+include_once('webiz_crm.features.inc');
+
+
+function webiz_crm_menu(){
+    $items['admin/settings/webiz_crm'] = array(
+      'title' => 'Webiz Sync Settings',
+      'description' => t('Administer webiz crm settings'),
+      'page callback' => 'webiz_crm_sync_settings',
+      'page arguments' => array(1),
+      'access arguments' => array('manage webiz data'),//'administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,
+    );
+    return $items;
+}
+
+
+function webiz_crm_sync_settings() {
+  $webiz_domain = variable_get('webiz_crm_sync_host', 'webiz.co.th');
+  $auto_sync = variable_get('webiz_crm_sync_auto', TRUE);
+  if(isset($_POST["save_settings"])) {
+    if($_POST["webiz_domain_name"]) { echo $POST["webiz_domain_name"];
+      $webiz_domain = $_POST["webiz_domain_name"];
+      variable_set('webiz_crm_sync_host',$webiz_domain);
+    }
+    if($_POST["auto_sync"]=='on') $auto_sync = TRUE; else  $auto_sync = FALSE;
+    variable_set('webiz_crm_sync_auto',$auto_sync);
+  }
+  
+  $output .= '<form  action="?" method="post">';
+  $output .= '<table><tr><td>Webiz Sync Domain</td><td>: <input type="text" name="webiz_domain_name" value="'.$webiz_domain.'"/></td></tr>';
+  $output .= '<tr><td>Auto Sync</td><td>: <input type="checkbox" name="auto_sync" '. ($auto_sync==TRUE ? 'checked' : '').'/></td></tr>';
+  $output .= '<tr><td><input type="submit" name="save_settings" value="Save"></td><td></td></tr></table>';
+  $output .= '</form>';   
+  return $output;
+}
+
+function webiz_crm_cron() {
+  if (variable_get('webiz_crm_sync_auto', TRUE)) {
+    webiz_crm_syn_data();
+    return;
+  } else return;
+}
+
+function webiz_crm_syn_data() {
+  $last_update = variable_get('webiz_crm_last_update', 0);
+  $webiz_domain = variable_get('webiz_crm_sync_host', 'webiz.co.th');
+  $requesturl = "http://" .$webiz_domain .":8888/api/export/user?last_update=".$last_update; 
+  $recievehttp =  drupal_http_request($requesturl);//
+  if($recievehttp->code != 200) {drupal_set_message('Webiz sync data : Error code :'.$recievehttp->code.'=>'.$recievehttp->error,'error');return;}
+  //variable_set('webiz_crm_last_update' , time());
+  $output = json_decode($recievehttp->data,TRUE);
+  $GTBO_array = array();
+  //echo "this is output";
+  //echo "<pre>";print_r($output);echo "</pre>";exit;
+  if($output[0]) foreach($output as $key => $value) {
+    $sql = "SELECT nid FROM content_type_customer WHERE field_customer_webiz_id_value = %d";
+    $node = '';
+    if($row = db_fetch_array(db_query($sql,$value['user_id']))) {
+      //echo "found";
+      $node = node_load($row['nid']);
+      $value['partner_reference'] = $node->field_customer_partner_ref[0]['value'];
+      echo "<pre>";print_r($node);echo "</pre>";exit;
+    } else {
+      //echo "not found";
+      $node = new stdClass();$node->type = 'customer';
+    	$node->body = 'This is the body.';$node->uid = 1;$node->status = 1;
+    	$node->format = 1; 
+    	if($value['campaign_name']=='GTBO') $value['partner_reference'] = $node->field_customer_partner_ref[0]['value'] = 'TH-'.webiz_crm_gen_uuid();
+    }    
+    $node->title = $value['bizname'];
+  	$node->field_customer_webiz_id[0]['value'] = $value['user_id'];
+  	$node->field_customer_biztype[0]['value'] = $value['biztype'];	 	 	
+    $node->field_customer_bizcat[0]['value'] = $value['bizcat']; 	 	 	
+    $node->field_customer_admin_name[0]['value'] = $value['admin_name'];	 	 	 	 	
+    $node->field_customer_admin_phone[0]['value'] = $value['admin_phone'];	 	 	 	 	 	
+    $node->field_customer_admin_email[0]['value'] = $value['admin_email'];
+    $node->field_customer_address[0]['value'] = $value['address']; 	 	 	 	 	
+    $node->field_customer_zipcode[0]['value'] = $value['zipcode'];
+    $node->field_customer_province[0]['value'] = $value['province'];	 	 	 	 	
+    $node->field_customer_district[0]['value'] = $value['district'];
+    $node->field_customer_subdistrict[0]['value'] = $value['subdistrict'];	 	 	 	 	
+    $node->field_customer_latitude[0]['value'] = $value['latitude'];
+    $node->field_customer_longitude[0]['value'] = $value['longitude'];	 	 	 	 	 	
+    $node->field_customer_phone[0]['value'] = $value['telephone']; 	 	
+    $node->field_customer_email[0]['value'] = $value['user_mail'];	 	 	 	 	
+    $node->field_customer_custom_domain[0]['value'] = $value['field_site_domain_value'];
+    $node->field_customer_webiz_domain[0]['value'] = $value['webiz_domain'];
+    $node->field_customer_campaign[0]['value'] = $value['campaign_name'];
+    $node->field_customer_register_ref[0]['value'] = $value['register_ref'];  
+    $node->field_customer_signup_date[0]['value'] = $value['signup_date'];  	
+    node_save($node);
+    if($value['campaign_name']=='GTBO')   $GTBO_array[] = $value;
+  }
+  webiz_crm_GTBO_xml_post($GTBO_array);
+  return;
+  //echo "last update = ". variable_get('webiz_crm_last_update', 0);
+  //exit; 
+}
+
+function webiz_crm_GTBO_xml_post($GTBO_array) {
+  $xml_post_url = "https://gxbo-test-xml.appspot.com/submit_xml";
+  $secret_key = "c8cd79fcf2b849f18f311e3d08aa6575";
+  
+  // create XML payload
+  $xml_payload = 'businesses=<?xml version="1.0" encoding="UTF-8"?><businesses secret-key="'.$secret_key.'">';
+  foreach($GTBO_array as $key => $value) {
+    $xml_payload .= '<business format-version="2.0"><partner-reference>'. $value['partner_reference'] .'</partner-reference>';
+    $xml_payload .= '<sign-up-date>'.date("Ymd\THis\Z",$value['signup_date']).'</sign-up-date>';
+    $owner_name = explode (' ',$value['owner_name']);
+    $xml_payload .= '<given-name>'.$owner_name[0].'</given-name><family-name>'.$owner_name[1].'</family-name><email>'.$value['user_mail'].'</email><language>th</language>';
+    $xml_payload .= '<final-url>http://'.$value['field_site_domain_value'].'</final-url><temporary-url>http://'.$value['webiz_domain'].'</temporary-url><final-url-being-used>True</final-url-being-used>';
+    $xml_payload .= '<business-name>'.$value['bizname'].'</business-name><business-description>'.$value['bizdescription'].'</business-description>';
+    $market_segment = explode(' - ',$value['bizcat']);
+    $xml_payload .= '<market-segments><segment>'.$market_segment[0].'</segment>'. ($market_segment[1] ? '<segment>'.$market_segment[1].'</segment>' :'') .'</market-segments>';
+    $address_line1 = $value['address'] .' ' . $value['subdistrict'] .' '. $value['district'];
+    $xml_payload .= '<address><address-line-1>'.$address_line1.'</address-line-1><address-line-2></address-line-2><city>'.$value['province'].'</city>	<state></state>	<region>East</region>	<post-code>'.$value['zipcode'].'</post-code>	<country-code>TH</country-code> </address>';
+    $xml_payload .= '<opt-in-email>'.($value['accepted_gmail'] ? 'True' : 'False').'</opt-in-email><opt-in-post>'.($value['accepted_gmail'] ? 'True' : 'False').'</opt-in-post><opt-in-places>'.($value['accepted_gplace'] ? 'True' : 'False').'</opt-in-places><account-deleted>False</account-deleted></business>';
+  }             
+  $xml_payload .= '</businesses>';
+  
+//  echo $xml_payload ; //exit;
+  $ch = curl_init(); 
+  curl_setopt($ch, CURLOPT_URL, $xml_post_url); 
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+  curl_setopt($ch, CURLOPT_TIMEOUT, 10); 
+  curl_setopt($ch, CURLOPT_HEADER, true); 
+  curl_setopt($ch, CURLOPT_HTTPHEADER, Array("Content-Type: text/xml")); 
+  curl_setopt($ch, CURLOPT_POSTFIELDS, $xml_payload); 
+  curl_setopt($ch, CURLOPT_SSLVERSION,3);
+  curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+  curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,  2);
+  /**
+   * Execute the request and also time the transaction
+  
+  $start = array_sum(explode(' ', microtime()));
+  
+  $stop = array_sum(explode(' ', microtime()));
+  $totalTime = $stop - $start;
+  
+   * Check for errors
+   */
+   $result = curl_exec($ch); 
+   echo $result; exit;
+  if ( curl_errno($ch) ) {
+      $result = 'ERROR -> ' . curl_errno($ch) . ': ' . curl_error($ch).'';
+  } else {
+      $returnCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      switch($returnCode){
+          case 404:
+              $result = 'ERROR -> 404 Not Found';
+              break;
+          default:
+              break;
+      }
+  }
+  curl_close($ch);   
+  return;
+}
+
+function webiz_crm_gen_uuid() {
+    return sprintf( '%04x%04x%04x%04x%04x%04x%04x%04x',
+        // 32 bits for "time_low"
+        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+        // 16 bits for "time_mid"
+        mt_rand( 0, 0xffff ),
+        // 16 bits for "time_hi_and_version",
+        // four most significant bits holds version number 4
+        mt_rand( 0, 0x0fff ) | 0x4000,
+        // 16 bits, 8 bits for "clk_seq_hi_res",
+        // 8 bits for "clk_seq_low",
+        // two most significant bits holds zero and one for variant DCE1.1
+        mt_rand( 0, 0x3fff ) | 0x8000,
+        // 48 bits for "node"
+        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
+    );
+}
