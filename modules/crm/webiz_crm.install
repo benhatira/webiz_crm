@@ -1,0 +1,60 @@
+<?php
+function webiz_crm_schema() {
+	$schema['webiz_crm_gxbo_xml_data'] = array(
+	  'description' => t("additionnal data for gxbo xml post"),
+	 	 'fields' => array(
+		    'uid' => array(
+		      'description' => t("user id"),
+		      'type' => 'int',
+		      'unsigned' => TRUE,
+		      'not null' => TRUE
+		    ),
+  		 'owner_name' => array(
+  		   'description' => t("owner name"),
+  		   'type' => 'varchar',
+  		   'length' => 255,
+  		   'not null' => TRUE,
+  		 ),
+  		 'bizdescription' => array(
+  		   'description' => t("business description"),
+  		   'type' => 'varchar',
+  		   'length' => 255,
+  		   'not null' => TRUE,
+  		 ),
+  		 'final_url_used' => array(
+  		   'description' => t("activate final url on gxbo"),
+         'type' => 'int',
+         'unsigned' => TRUE,
+       ),
+	  ),
+	  'primary key' => array('uid'),
+	);
+  return $schema;
+}
+function webiz_crm_install() {
+  // Create tables.
+  drupal_install_schema('webiz_crm');
+}
+function webiz_crm_uninstall() {
+  // Remove tables.
+   drupal_uninstall_schema('webiz_crm');
+}
+
+function webiz_crm_update_6101(){
+    drupal_install_schema('webiz_crm');
+}
+
+function webiz_crm_update_6102(){
+    db_query('CREATE TABLE webiz_crm_report_register_graph (
+             time INT unsigned,
+             count INT unsigned
+           );');
+}
+function webiz_crm_update_6103(){
+    db_query('CREATE TABLE webiz_crm_report_publish_graph (
+             time INT unsigned,
+             publish INT unsigned,
+             unpublish INT unsigned,
+             banned INT unsigned
+           );');
+}

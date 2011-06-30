@@ -12,9 +12,26 @@ function webiz_crm_menu(){
       'access arguments' => array('manage webiz data'),//'administer site configuration'),
       'type' => MENU_NORMAL_ITEM,
     );
+    $items['report/line_graph_gtbo'] = array(
+      'title' => 'Crm register graph',
+      'description' => t('Administer webiz crm graph'),
+      'page callback' => 'webiz_crm_report_line_graph',
+  		'type' => MENU_CALLBACK,
+  		'access arguments' => array('view webiz report'),//'administer site configuration'),
+    );
+    $items['report/line_graph_publish'] = array(
+      'title' => 'Crm publish graph',
+      'description' => t('Administer webiz crm graph'),
+      'page callback' => 'webiz_crm_report_publish_graph',
+  		'type' => MENU_CALLBACK,
+  		'access arguments' => array('view webiz report'),//'administer site configuration'),
+    );
     return $items;
 }
 
+function webiz_crm_perm(){
+  return array('view webiz report');
+}
 
 function webiz_crm_sync_settings() {
   $webiz_domain = variable_get('webiz_crm_sync_host', 'webiz.co.th');
@@ -39,15 +56,24 @@ function webiz_crm_sync_settings() {
 function webiz_crm_cron() {
   if (variable_get('webiz_crm_sync_auto', TRUE)) {
     webiz_crm_syn_data();
-    return;
-  } else return;
+  } 
+  $last_update = variable_get('webiz_crm_stat_last_update',time()-3600);
+  $update_hour = date("g",$last_update );
+  $this_hour = date("g");
+  if($this_hour!=$update_hour)  webiz_crm_update_register_stat();
+  //job_queue_add('drupal_mail', 'test queue', array('webiz_crm', 'mail', 'note@7republic.com', 'th', array('body'=>'body','subject'=>'subject'), $from, TRUE) , '', TRUE);
+  $update_day = date("j",$last_update);
+  $this_day = date("j");
+  if($this_day!=$update_day)  webiz_crm_update_publish_stat();
+  return;
 }
 
 function webiz_crm_syn_data() {
-  $last_update = variable_get('webiz_crm_last_update', 0);
+  $last_update = variable_get('webiz_crm_last_update', 0);$webiz_secret = '1d4472952559940370062846debeae15';
+  //$last_update = 0;
   $webiz_domain = variable_get('webiz_crm_sync_host', 'webiz.co.th');
-  $requesturl = "http://" .$webiz_domain ."/api/export/user?last_update=".$last_update; 
-  $recievehttp =  drupal_http_request($requesturl);//
+  $requesturl = "http://" .$webiz_domain ."/api/export/user?secret=".$webiz_secret."&last_update=".$last_update; 
+  $recievehttp =  drupal_http_request($requesturl);
   if($recievehttp->code != 200) {drupal_set_message('Webiz sync data : Error code :'.$recievehttp->code.'=>'.$recievehttp->error,'error');return;}
   variable_set('webiz_crm_last_update' , time());
   $output = json_decode($recievehttp->data,TRUE);
@@ -55,22 +81,34 @@ function webiz_crm_syn_data() {
   //echo "this is output";
   //echo "<pre>";print_r($output);echo "</pre>";exit;
   if($output[0]) foreach($output as $key => $value) {
-    $sql = "SELECT nid FROM content_type_customer WHERE field_customer_webiz_id_value = %d";
+    $sql = "SELECT ctc.nid as nid,gxbo.*  FROM {content_type_customer as ctc}
+        INNER JOIN {webiz_crm_gxbo_xml_data as gxbo} ON (ctc.field_customer_webiz_id_value = gxbo.uid)
+        WHERE ctc.field_customer_webiz_id_value = %d";
     $node = '';
     if($row = db_fetch_array(db_query($sql,$value['user_id']))) {
-      //echo "found";
+      //echo "found"; print_r($row);
       $node = node_load($row['nid']);
       $value['partner_reference'] = $node->field_customer_partner_ref[0]['value'];
+      $value['owner_name'] = $row['owner_name'];
+      $value['bizdescription'] = $row['bizdescription'];
+      $value['final_url_used'] = $row['final_url_used'];
+      $value['webiz_domain'] = $node->field_customer_webiz_domain[0]['value'];
       //echo "<pre>";print_r($node);echo "</pre>";exit;
     } else {
       //echo "not found";
-      $node = new stdClass();$node->type = 'customer';
-    	$node->body = 'This is the body.';$node->uid = 1;$node->status = 1;
+      $node = new stdClass();$node->type = 'customer';$new_node = 1;
+    	$node->body = 'This is the body.';$node->uid = 1;$node->status = 1;$node->comment=2;$node->promote=1;
     	$node->format = 1; 
-    	if($value['campaign_name']=='GTBO') $value['partner_reference'] = $node->field_customer_partner_ref[0]['value'] = 'TH-'.webiz_crm_gen_uuid();
+    	$value['partner_reference'] = $node->field_customer_partner_ref[0]['value'] = 'TH-'.webiz_crm_gen_uuid();
+      $value['final_url_used'] = 0;
+      $node->field_customer_webiz_domain[0]['value'] = $value['webiz_domain'];
+      $node->field_customer_campaign[0]['value'] = $value['campaign_name'];
+      $node->field_customer_register_ref[0]['value'] = $value['register_ref'];  
+      $node->field_customer_signup_date[0]['value'] = $value['signup_date'];
+      $node->field_customer_webiz_id[0]['value'] = $value['user_id'];
+      db_query("INSERT INTO {webiz_crm_gxbo_xml_data} VALUES (%d,'%s','%s',%d) ",$value['user_id'],$value['owner_name'],$value['bizdescription'],$value['final_url_used']);
     }    
     $node->title = $value['bizname'];
-  	$node->field_customer_webiz_id[0]['value'] = $value['user_id'];
   	$node->field_customer_biztype[0]['value'] = $value['biztype'];	 	 	
     $node->field_customer_bizcat[0]['value'] = $value['bizcat']; 	 	 	
     $node->field_customer_admin_name[0]['value'] = $value['admin_name'];	 	 	 	 	
@@ -86,22 +124,20 @@ function webiz_crm_syn_data() {
     $node->field_customer_phone[0]['value'] = $value['telephone']; 	 	
     $node->field_customer_email[0]['value'] = $value['user_mail'];	 	 	 	 	
     $node->field_customer_custom_domain[0]['value'] = $value['field_site_domain_value'];
-    $node->field_customer_webiz_domain[0]['value'] = $value['webiz_domain'];
-    $node->field_customer_campaign[0]['value'] = $value['campaign_name'];
-    $node->field_customer_register_ref[0]['value'] = $value['register_ref'];  
-    $node->field_customer_signup_date[0]['value'] = $value['signup_date'];  	
+    $node->field_customer_site_status[0]['value'] = $value['status'];
+    //print_r($node);exit;
     node_save($node);
-    if($value['campaign_name']=='GTBO')   $GTBO_array[] = $value;
+    if($new_node) db_query('UPDATE casetracker_case set pid=1, case_priority_id=3, case_type_id=10, case_status_id=4 where nid=%d;',$node->nid);
+    $GTBO_array[] = $value;
   }
   webiz_crm_GTBO_xml_post($GTBO_array);
   return;
-  //echo "last update = ". variable_get('webiz_crm_last_update', 0);
-  //exit; 
 }
 
 function webiz_crm_GTBO_xml_post($GTBO_array) {
-  $xml_post_url = "https://gxbo-test-xml.appspot.com/submit_xml";
-  $secret_key = "c8cd79fcf2b849f18f311e3d08aa6575";
+  $xml_post_url = "https://gxbo-thailand-hr.appspot.com/submit_xml";
+  //$xml_post_url = "http://webiz.co.th/sites/crm.webiz.co.th/modules/crm/post.php";
+  $secret_key = "90c6a0f677fc4fc7bff9c87cb325eb30";
   
   // create XML payload
   $xml_payload = 'businesses=<?xml version="1.0" encoding="UTF-8"?><businesses secret-key="'.$secret_key.'">';
@@ -109,24 +145,25 @@ function webiz_crm_GTBO_xml_post($GTBO_array) {
     $xml_payload .= '<business format-version="2.0"><partner-reference>'. $value['partner_reference'] .'</partner-reference>';
     $xml_payload .= '<sign-up-date>'.date("Ymd\THis\Z",$value['signup_date']).'</sign-up-date>';
     $owner_name = explode (' ',$value['owner_name']);
-    $xml_payload .= '<given-name>'.$owner_name[0].'</given-name><family-name>'.$owner_name[1].'</family-name><email>'.$value['user_mail'].'</email><language>th</language>';
-    $xml_payload .= '<final-url>http://'.$value['field_site_domain_value'].'</final-url><temporary-url>http://'.$value['webiz_domain'].'</temporary-url><final-url-being-used>True</final-url-being-used>';
-    $xml_payload .= '<business-name>'.$value['bizname'].'</business-name><business-description>'.$value['bizdescription'].'</business-description>';
+    $xml_payload .= '<given-name>'.$owner_name[0].'</given-name><family-name>'.$owner_name[1].'</family-name><email>'.urlencode($value['user_mail']).'</email><language>th</language>';
+    $xml_payload .= '<final-url>http://'.$value['field_site_domain_value'].'</final-url><temporary-url>http://'.$value['webiz_domain'].'</temporary-url><final-url-being-used>'.($value['final_url_used'] ? 'True' : '').'</final-url-being-used>';
+    $xml_payload .= '<business-name>'.webiz_crm_urlencode($value['bizname']).'</business-name><business-description>'.webiz_crm_urlencode($value['bizdescription']).'</business-description>';
     $market_segment = explode(' - ',$value['bizcat']);
     $xml_payload .= '<market-segments><segment>'.$market_segment[0].'</segment>'. ($market_segment[1] ? '<segment>'.$market_segment[1].'</segment>' :'') .'</market-segments>';
     $address_line1 = $value['address'] .' ' . $value['subdistrict'] .' '. $value['district'];
-    $xml_payload .= '<address><address-line-1>'.$address_line1.'</address-line-1><address-line-2></address-line-2><city>'.$value['province'].'</city>	<state></state>	<region>East</region>	<post-code>'.$value['zipcode'].'</post-code>	<country-code>TH</country-code> </address>';
-    $xml_payload .= '<opt-in-email>'.($value['accepted_gmail'] ? 'True' : 'False').'</opt-in-email><opt-in-post>'.($value['accepted_gmail'] ? 'True' : 'False').'</opt-in-post><opt-in-places>'.($value['accepted_gplace'] ? 'True' : 'False').'</opt-in-places><account-deleted>False</account-deleted></business>';
+    $xml_payload .= '<address><address-line-1>'.webiz_crm_urlencode($address_line1).'</address-line-1><address-line-2></address-line-2><city>'.$value['province'].'</city>	<state></state>	<region></region>	<post-code>'.$value['zipcode'].'</post-code>	<country-code>TH</country-code> </address>';
+    $xml_payload .= '<opt-in-email>'.($value['accepted_gmail'] ? 'True' : '').'</opt-in-email><opt-in-post>'.($value['accepted_gmail'] ? 'True' : '').'</opt-in-post><opt-in-places>'.($value['accepted_gplace'] ? 'True' : '').'</opt-in-places>';
+    $xml_payload .= '<account-deleted>False</account-deleted></business>';
   }             
   $xml_payload .= '</businesses>';
   
-//  echo $xml_payload ; //exit;
+  //echo $xml_payload ; //exit;
   $ch = curl_init(); 
   curl_setopt($ch, CURLOPT_URL, $xml_post_url); 
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
   curl_setopt($ch, CURLOPT_TIMEOUT, 10); 
   curl_setopt($ch, CURLOPT_HEADER, true); 
-  curl_setopt($ch, CURLOPT_HTTPHEADER, Array("Content-Type: text/xml")); 
+  //curl_setopt($ch, CURLOPT_HTTPHEADER, Array("Content-Type: text/xml")); 
   curl_setopt($ch, CURLOPT_POSTFIELDS, $xml_payload); 
   curl_setopt($ch, CURLOPT_SSLVERSION,3);
   curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
@@ -141,8 +178,9 @@ function webiz_crm_GTBO_xml_post($GTBO_array) {
   
    * Check for errors
    */
-   $result = curl_exec($ch); 
-   //echo $result; exit;
+   $result = curl_exec($ch);  //echo $result;exit;
+   watchdog('gxbo_post_result', 'result=@result:::::xml=@xml', array('@result' => $result, '@xml' => $xml_payload), WATCHDOG_NOTICE);
+ //echo $result;
   if ( curl_errno($ch) ) {
       $result = 'ERROR -> ' . curl_errno($ch) . ': ' . curl_error($ch).'';
   } else {
@@ -155,8 +193,17 @@ function webiz_crm_GTBO_xml_post($GTBO_array) {
               break;
       }
   }
+  echo $result; 
   curl_close($ch);   
   return;
+}
+
+function webiz_crm_urlencode($string) {
+    //$entities = array('%25', '%21', '%2A', '%27', '%28', '%29', '%3B', '%3A', '%40', '%26', '%3D', '%2B', '%24', '%2C', '%2F', '%3F',  '%23', '%5B', '%5D');
+    //$replacements = array("%",'!', '*', "'", "(", ")", ";", ":", "@", "&", "=", "+", "$", ",", "/", "?",  "#", "[", "]");
+    $entities = array('%26');
+    $replacements = array("&");
+    return str_replace($replacements, $entities,  $string);
 }
 
 function webiz_crm_gen_uuid() {
@@ -175,4 +222,145 @@ function webiz_crm_gen_uuid() {
         // 48 bits for "node"
         mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
     );
+}
+function webiz_crm_update_register_stat(){
+  $last_update = variable_get('webiz_crm_stat_last_update',time()-3600);
+  $last_hour  = mktime(date("H",$last_update), 0, 0, date("m",$last_update)  , date("d",$last_update), date("Y",$last_update));
+  $count  = db_result(db_query("SELECT COUNT(*) FROM {content_type_customer as ctc} WHERE ctc.field_customer_signup_date_value < %d",$last_hour+3600)); 
+  db_query("INSERT INTO webiz_crm_report_register_graph ( time, count)
+                         VALUES (%d,%d);",$last_hour,$count);
+  variable_set('webiz_crm_stat_last_update',$last_hour+3600);
+  return;
+}
+
+function webiz_crm_report_line_graph(){
+  $output = '<a href="/report/line_graph_gtbo">กราฟ 24 ชม. ล่าสุด</a> | <a href="/report/line_graph_gtbo?r=week">กราฟ 7 วัน ล่าสุด</a>';
+  //echo arg(2);
+  $last_update  = variable_get('webiz_crm_stat_last_update',time()-3600);
+  $old_total = '';$min_value = '';$cycle = 0;
+  //echo $last_update;
+  if($_GET['r']=='' || $_GET['r']=='day') {
+    $stat_result  =  db_query("SELECT * FROM {webiz_crm_report_register_graph} WHERE time >= %d ORDER BY time ASC;",$last_update - (25*60*60));
+    while($row = db_fetch_array($stat_result)) { 
+      if($old_total == '') {$min_value = $old_total=$row['count'];continue;}  else { 
+    //  if($cycle++%2==0) 
+        $data .= "['". date('ga',$row['time']+(3600)) ."',".$row['count'] .",".$old_total."],";
+   //  else $data .= "['',".$row['count'] .",".$old_total."],";
+        $old_total=$row['count'];
+      }
+    }   
+   /*           ['1', 1000],
+              ['2', 1030]*/
+    $data =  substr($data,0,-1);$showEvery = 2; 
+    $xtitle = 'Last 24 Hours';$type = 'Last Hour';
+  } elseif($_GET['r']=='week') {
+    $stat_result  =  db_query("SELECT * FROM {webiz_crm_report_register_graph} WHERE time >= %d HAVING MOD(time,86400) = 0 ORDER BY time ASC;",$last_update - (8*24*60*60));
+    while($row = db_fetch_array($stat_result)) {    
+         if($old_total == '') {$min_value = $old_total=$row['count'];continue;}  else { 
+       //  if($cycle++%2==0) 
+           $data .= "['". date('d-m-Y',$row['time']) ."',".$row['count'] .",".$old_total."],";
+      //  else $data .= "['',".$row['count'] .",".$old_total."],";
+           $old_total=$row['count'];
+         }
+    }
+    $data =  substr($data,0,-1);$showEvery = 1; 
+    $xtitle = 'Last 7 Days';$type = 'Yesterday';
+  }
+  $output .= "<script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
+      <script type=\"text/javascript\">
+        google.load('visualization', '1', {packages:['corechart']});
+        google.setOnLoadCallback(drawChart);
+        function drawChart() {
+          var data = new google.visualization.DataTable();
+          data.addColumn('string', 'Time');
+          data.addColumn('number', 'Total');
+          data.addColumn('number', '$type');
+          data.addRows([";
+  $output .= $data;
+  $output .= "]);
+          var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+          chart.draw(data, {width: 1000, height: 600,title: 'Register Graph',titlePosition: 'in' , pointSize: 4,
+          hAxis: {title: '$xtitle', titleTextStyle: {color: '#FF0000'},slantedText:true,showTextEvery:$showEvery},
+          vAxis:{title: 'Sum',minValue : $min_value, titleTextStyle: {color: '#FF0000'}}});}</script>";
+  $output .= '<div id="chart_div"></div>';
+  return $output;
+}
+
+function webiz_crm_update_publish_stat(){
+  $publish = db_result(db_query("SELECT COUNT(*) FROM {content_type_customer as ctc} WHERE ctc.field_customer_site_status_value = 1")); 
+  $unpublish = db_result(db_query("SELECT COUNT(*) FROM {content_type_customer as ctc} WHERE ctc.field_customer_site_status_value = 0"));
+  $banned = db_result(db_query("SELECT COUNT(*) FROM {content_type_customer as ctc} WHERE ctc.field_customer_site_status_value = -1"));
+  db_query("INSERT INTO webiz_crm_report_publish_graph ( time, publish, unpublish, banned)
+                         VALUES (%d,%d,%d,%d);",time(),$publish,$unpublish,$banned);
+  return;
+}
+function webiz_crm_report_publish_graph(){$rcount = 0;
+  $stat_result  =  db_query("SELECT * FROM {webiz_crm_report_publish_graph} WHERE time >= %d ORDER BY time ASC",time() - (7*24*60*60));
+  while($row = db_fetch_array($stat_result)) {    
+        $data .=  "data.setValue($rcount, 0, '". date('d-m-Y',$row['time']) ."');data.setValue($rcount, 1,".$row['publish'] .");data.setValue($rcount, 2,".$row['unpublish'].");data.setValue($rcount, 3,".$row['banned'].");";
+        $rcount +=1;
+        //$data .= "['". date('d-m-Y',$row['time']) ."',".$row['publish'] .",".$row['unpublish'].",".$row['banned']."],";
+  }
+  $xtitle = 'Last 7 Days';//$type = 'Yesterday';
+  $output .= "<script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
+      <script type=\"text/javascript\">
+        google.load('visualization', '1', {packages:['corechart']});
+        google.setOnLoadCallback(drawChart);
+        function drawChart() {
+          var data = new google.visualization.DataTable();
+          data.addColumn('string', 'Time');
+          data.addColumn('number', 'publish');
+          data.addColumn('number', 'unpublish');
+          data.addColumn('number', 'ban');
+          data.addRows(7);";
+  $output .= $data;
+  $output .= "var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+          chart.draw(data, {width: 1000, height: 600,title: 'Publish Graph',titlePosition: 'in' , pointSize: 4,
+          hAxis: {title: '$xtitle', titleTextStyle: {color: '#FF0000'},slantedText:true,showTextEvery:1},
+          vAxis:{title: 'Sum', titleTextStyle: {color: '#FF0000'}}});}</script>";
+  $output .= '<div id="chart_div"></div>';
+  return $output;
+}
+
+function webiz_crm_job_queue_functions() {
+  $functions['drupal_mail'] = array(
+    'title' => t('Drupal mail'),
+  );
+  return $functions;
+}
+function webiz_crm_mail($key, &$message, $params) {
+  $message['subject'] = $params['subject'];
+  $message['body'][] = $params['body'];
+//  $message['headers'] = array_merge($message['headers'], $params['headers']);
+}
+
+function webiz_crm_mailer_cron(){
+    $sql = "SELECT nid FROM node WHERE type = 'mailer'";
+    $result = db_query($sql);
+    while($row = db_fetch_array($result)) {
+      $mailer = node_load($row['nid']);
+      $time_gt = 0;//time() - ( 86400 * $mailer->field_mailer_sending_delay[0]['value']);
+      $time_lt = 140000000000000;//$time_gt + 86400;
+      $sub_sql = db_query("SELECT n.nid FROM {node as n} INNER JOIN {content_type_customer as ctc} on (n.nid = ctc.nid) WHERE ctc.field_customer_signup_date_value >= %d and ctc.field_customer_signup_date_value < %d",$time_gt,$time_lt);
+      while($customer_nid = db_fetch_array($sub_sql)) {
+        $customer = node_load($customer_nid['nid']);
+        $to = $customer->field_customer_admin_email[0]['value'];//'note@7republic.com';//
+        $subject = token_replace($mailer->field_mailer_subject[0]['value'],'node',$customer);
+        $body = token_replace($mailer->body,'node',$customer);
+        $from = 'crm@webiz.co.th';
+        $language = 'th';
+        $params = array(
+          'body' => $body,
+          'subject' => $subject,
+          //'headers' => $headers
+        );
+        $description = 'mail to '. $to;
+       // echo '<pre>';
+       // print_r($params);
+       // echo '</pre>';
+        job_queue_add('drupal_mail', $description, array('webiz_crm', 'mail', $to, $language, $params, $from, TRUE) , '', TRUE);
+      }
+    }
+    //$output ='';
+    return ;//$output;
 }
