@@ -6,6 +6,15 @@
   <title><?php print $head_title ?></title>
   <?php print $styles ?>
   <?php print $scripts ?>
+  <script type="text/javascript" src="<?php echo $base_url.'/'.path_to_theme();?>/js/jquery-ui-1.8.16.custom.min.js"></script>
+  <script type="text/javascript" src="<?php echo $base_url.'/'.path_to_theme();?>/js/jquery-ui-timepicker-addon.js"></script>
+  <link type="text/css" href="<?php echo $base_url.'/'.path_to_theme();?>/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet">
+  <script type="text/javascript" src="<?php echo $base_url.'/'.path_to_theme();?>/js/jquery.ui.datepicker.ext.js"></script>
+  <script type="text/javascript" src="<?php echo $base_url.'/'.path_to_theme();?>/js/thickbox.js"></script>
+  <script type="text/javascript" src="<?php echo $base_url.'/'.path_to_theme();?>/js/tooltip.js"></script>
+  <script type="text/javascript" src="<?php echo $base_url.'/'.path_to_theme();?>/js/datepicker.js"></script>
+  <link type="text/css" href="<?php echo $base_url.'/'.path_to_theme();?>/css/thickbox.css" rel="stylesheet">
+ 
   <!--[if lt IE 9]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
@@ -14,6 +23,9 @@
 <body class="<?php print $body_classes; ?>">
 
   <div id="wrapper" class="clearfix">
+
+<span id="info-tooltip"></span>
+
 
     <div id="skip-link">
       <a href="#main-content" class="element-invisible element-focusable"><?php print t('Skip to main content'); ?></a>

@@ -1,6 +1,7 @@
 <?php
 
 include_once('webiz_crm.features.inc');
+include_once('webiz_crm.note.inc');
 
 
 function webiz_crm_menu(){
@@ -26,11 +27,284 @@ function webiz_crm_menu(){
   		'type' => MENU_CALLBACK,
   		'access arguments' => array('view webiz report'),//'administer site configuration'),
     );
+    $items['hunt/set/quality'] = array(
+      'title' => 'Crm test',
+      'description' => t('quality set'),
+      'page callback' => 'webiz_crm_hunt_quality',
+  		'type' => MENU_CALLBACK,
+  		'access arguments' => array('set quality status'),//'administer site configuration'),
+    );
+    $items['note/set/call'] = array(
+      'title' => 'Crm test',
+      'description' => t('call set'),
+      'page callback' => 'webiz_crm_note_call',
+  		'type' => MENU_CALLBACK,
+  		'access arguments' => array('set call status'),//'administer site configuration'),
+    );
+    $items['note/webiz_crm_test'] = array(
+      'title' => 'Crm test',
+      'description' => t('webiz crm test'),
+      'page callback' => 'webiz_crm_note_test',
+  		'type' => MENU_CALLBACK,
+  		'access arguments' => array('manage webiz data'),//'administer site configuration'),
+    );
+    $items['note/webiz_crm_xml_repost'] = array(
+      'title' => 'xml repost',
+      'description' => t('webiz crm test'),
+      'page callback' => 'webiz_crm_xml_repost',
+  		'type' => MENU_CALLBACK,
+  		'access arguments' => array('manage webiz data'),//'administer site configuration'),
+    );
+    $items['note/webiz_crm_publish_csv'] = array(
+      'title' => 'xml repost',
+      'description' => t('webiz crm test'),
+      'page callback' => 'webiz_crm_publish_csv',
+  		'type' => MENU_CALLBACK,
+  		'access arguments' => array('manage webiz data'),//'administer site configuration'),
+    );
+    $items['report/line_graph_callcenter'] = array(
+      'title' => 'Callcenter Graph',
+      'description' => t('webiz crm test'),
+      'page callback' => 'webiz_crm_report_callcenter_graph',
+  		'type' => MENU_CALLBACK,
+  		'access arguments' => array('view webiz report'),//'administer site configuration'),
+    );
+    $items['report/csv_export'] = array(
+      'title' => 'CSV Export',
+      'description' => t('webiz crm test'),
+      'page callback' => 'webiz_crm_excel_export',
+  		'type' => MENU_CALLBACK,
+  		'access arguments' => array('export webiz csv'),//'administer site configuration'),
+    );
+    $items['api/dotarai/domain_status'] = array(
+      'title' => 'dotarai domain status',
+      'description' => t('set domain status'),
+      'page callback' => 'webiz_crm_api_dotarai_set_domainstatus',
+  		'type' => MENU_CALLBACK,
+  		'access callback' => TRUE,//'administer site configuration'),
+    );
+    $items['api/sms_password/%/%/%/%'] = array(
+      'title' => 'sms password api',
+      'description' => t('get sms password'),
+      'page callback' => 'webiz_crm_api_sms_password',
+      'page arguments' => array(2,3,4,5), 
+  		'type' => MENU_CALLBACK,
+  		'access callback' => TRUE,//'administer site configuration'),
+    );
+     $items['search/sms'] = array(
+        'title' => 'search sms password',
+        'description' => t('search sms password'),
+        'page callback' => 'webiz_crm_search_sms_password',
+    		'type' => MENU_CALLBACK,
+    		'access callback' => TRUE,//'administer site configuration'),
+      );
+    $items['manage/customer/delete'] = array(
+      'title' => 'ลบโดเมนบน Webiz',
+      'description' => t('Administer webiz customer delete'),
+      'page callback' => 'webiz_crm_customer_delete',
+  		'type' => MENU_CALLBACK,
+  		'access arguments' => array('view webiz report'),//'administer site configuration'),
+    );
+    $items['crm_tooltip'] = array(
+      'title' => 'crm info tooltip',
+      'description' => t('Administer webiz crm show tooltip'),
+      'page callback' => 'webiz_crm_tooltip',
+  		'type' => MENU_CALLBACK,
+      'access arguments' => array('view webiz crm tooltip'),//'administer site configuration'),
+    );
+    $items['crm_info'] = array(
+      'title' => 'crm show info',
+      'description' => t('Administer webiz crm show info'),
+      'page callback' => 'webiz_crm_info',
+  		'type' => MENU_CALLBACK,
+      'access arguments' => array('view webiz crm info'),//'administer site configuration'),
+    );
+    $items['update_crm_info'] = array(
+      'title' => 'crm update info',
+      'description' => t('Administer webiz crm update info'),
+      'page callback' => 'webiz_crm_update_info',
+  		'type' => MENU_CALLBACK,
+      'access arguments' => array('view webiz crm update info'),//'administer site configuration'),
+    ); 
+    $items['weekly_report'] = array(
+      'title' => 'crm weekly report',
+      'description' => t('weekly report'),
+      'page callback' => 'webiz_crm_weekly_report',
+  		'type' => MENU_CALLBACK,
+      'access arguments' => array('manage webiz data'),//'administer site configuration'),
+    );
     return $items;
 }
 
 function webiz_crm_perm(){
-  return array('view webiz report');
+  return array('set quality status','view webiz report','export webiz csv','set call status');
+}
+
+
+function webiz_crm_update_info(){
+   
+   global $db_url;
+   global $user;
+  
+  $ip=$_SERVER['HTTP_X_FORWARDED_FOR'];
+  $nid = $_REQUEST['nid'];
+  $status = $_REQUEST['status'];
+  $status_desc = $_REQUEST['status_desc'];
+  $recall_date = $_REQUEST['recall_date'];
+  $node = node_load($nid);
+  
+  if($_REQUEST['mode']=='level') {
+  $node->field_customer_status_level[0]['value'] = $status;
+  $node->field_customer_status_des[0]['value'] = $status_desc;
+  $node->field_customer_recall_datetime[0]['value'] = $recall_date;
+  }else if($_REQUEST['mode']=='check'){
+  $node->field_customer_status_check[0]['value'] = 'pass';  
+  }
+  node_save($node);
+  
+  $data = variable_get('status_description',array());
+  for($i=1;$i<=sizeof($data);$i++) {
+      if($node->field_customer_status_des[0]['value']==$i){
+          $text = $data[$i];
+          $msg = "callcenter changes status is ".$text."(".$i.")";
+      }
+  }
+  
+  /* Switch Database */
+  db_set_active('webiz_crm_cc'); 
+  $sql="INSERT INTO {watchdog_callcenter} (uid,type,message,location,hostname,timestamp) VALUES ('%d','%s','%s','%s','%s','%s') ";
+  $result = db_query($sql,$user->uid,'callcenter',$msg,'',$ip,time());
+  db_set_active('default');
+  /* End Switch Database */
+  
+  if($node->changed)
+  {
+     echo 'yes';
+  }
+  
+  print_r($node);
+}
+
+
+function webiz_crm_info(){
+  
+  $data = array(
+      1 => "ช่วยทำ web จนเสร็จ",
+      2 => "ยังไม่มีธุรกิจ",
+      3 => "ลองศึกษาข้อมูลดูก่อน",
+      4 => "ยังไม่ว่าง / ติดต่อกลับมาเอง",
+      5 => "ไม่มีเวลาทำ และไม่ต้องการให้ช่วย",
+      6 => "แจ้งว่าไม่รู้เรื่อง",
+      7 => "เบอร์ติดต่อไม่ได้ (ไม่มีหมายเลขที่เรียก)",
+      8 => "ขอยกเลิกบริการ"
+  );
+  variable_set('status_description',$data);
+  
+  drupal_add_js(drupal_get_path('theme','framework') .'/js/datepicker.js');
+  drupal_add_js(drupal_get_path('module','webiz_crm') .'/js/script.js');
+  $vars = array();
+  $nid = $_GET['nid'];
+  $vars['nid'] = $nid;
+  $result = theme_render_template(drupal_get_path('module','webiz_crm').'/themes/info_crm.tpl.php',$vars);
+  echo $result;
+  exit;
+ 
+}
+
+
+function webiz_crm_tooltip(){
+  $info = array();
+  
+  $nid = $_POST['nid'];
+  $node = node_load($nid);
+  $info['address'] = $node->field_customer_address[0]['value'];
+  $info['email'] = $node->field_customer_admin_email[0]['value'];
+  $info['name'] = $node->field_customer_admin_name[0]['value'];
+  $info['phone'] = $node->field_customer_admin_phone[0]['value'];
+  $info['bizcat'] = $node->field_customer_bizcat[0]['value'];
+  $info['biztype'] = $node->field_customer_biztype[0]['value'];
+  $info['campaign'] = $node->field_customer_campaign[0]['value'];
+  $info['district'] = $node->field_customer_district[0]['value'];
+  $info['province'] = $node->field_customer_province[0]['value'];
+  $info['subdistrict'] = $node->field_customer_subdistrict[0]['value'];
+  $info['zipcode'] = $node->field_customer_zipcode[0]['value'];
+  $info['custom_domain'] = $node->field_customer_custom_domain[0]['value'];
+  $info['webiz_domain'] = $node->field_customer_webiz_domain[0]['value'];
+  $info['site_status'] = $node->field_customer_site_status[0]['value'];
+  echo drupal_json($info);
+  exit;
+}
+
+
+function webiz_crm_customer_delete(){
+  if(isset($_POST["save_settings"])) {
+    if($_POST["domain_name"]!=''   && $_POST["admin_email"]!= '') { 
+      $nid = db_result(db_query('SELECT n.nid FROM node n JOIN content_type_customer customer  on n.nid = customer.nid 
+        WHERE customer.field_customer_custom_domain_value = \'%s\' 
+        and customer.field_customer_admin_email_value = \'%s\''
+        ,$_POST["domain_name"] ,$_POST["admin_email"]));
+      if($nid) {
+        $confirm = 1;$node = node_load($nid);
+      } else 
+        $output .= '<span style="color:red">ไม่พบ โดเมน และอีเมล ชื่อนี้</span>';
+    } else {
+      $output .= '<span style="color:red">กรุณากรอก โดเมน และอีเมล</span>';
+    }
+  } elseif(isset($_POST["confirm_mail"])) {
+    //ส่งเมล
+    $node = node_load($_POST['nid']);
+    $domain = $node->field_customer_custom_domain[0]["value"];
+    $to = $node->field_customer_admin_email[0]['value'];//'note@7republic.com';//
+    $encode_text = $node->field_customer_custom_domain[0]["value"] . '@webiz.co.th' . $node->field_customer_webiz_id[0]["value"];
+    $code = md5($encode_text);
+    $from = 'crm@webiz.co.th';
+    $language = 'th';
+
+    $subject = 'Delete Confirmation';//token_replace($mailer->field_mailer_subject[0]['value'],'node',$customer);
+    $body .= "เรียน ท่านผู้ประกอบการ
+    คุณได้รับข้อความนี้เนื่องจากมีผู้ต้องการขอยกเลิกการใช้บริการ Goonline ของคุณ
+    อีเมลฉบับนี้จะขอให้คุณยืนยันการยกเลิกการใช้บริการ โดยคลิกลิงก์ที่ให้ไว้ และใส่รหัสตามที่แสดงด้านล่างเพื่อยืนยันการยกเลิกเว็บไซต์
+
+    คลิ๊ก http://webiz.co.th/delete_confirmation/".$domain." เพื่อกรอกรหัสยืนยันการยกเลิกการใช้บริการ
+    รหัสสำหรับการยกเลิก : ".$code." 
+
+    ทางทีมงานขอขอบคุณสำหรับความไว้วางใจในงานบริการของเรา และหวังว่าจะได้เป็นส่วนหนึ่งในการพัฒนาของธุรกิจของคุณในโอกาสต่อไป
+
+
+    ด้วยความเคารพ
+    ทีมงาน Webiz
+    
+    
+    ----------------------------------------";
+    $params = array(
+     'body' => $body,
+     'subject' => $subject,
+     //'headers' => $headers
+    );
+
+    $description = 'delete confirm ' .$domain. ' send to '.$to;//$to = 'note@7republic.com';//'benhatira@gmail.com';
+    watchdog('mailer_watch','delete confirmation mail sent to '. $domain);
+    job_queue_add('drupal_mail', $description, array('webiz_crm', 'mail', $to, $language, $params, $from, TRUE) , '', TRUE);
+    $output .= '<span style="color:green">ส่งอีเมลเรียบร้อย</span>'; return $output;
+  }
+  
+  if($confirm) {
+    $output .= '<form  action="?" method="post">';
+    $output .= '<table><tr><td>ข้อมูลผู้ใช้</td><td></td></tr>';
+    $output .= '<tr><td>โดเมน :</td><td>'.$node->field_customer_custom_domain[0]["value"].'</td></tr>';
+    $output .= '<tr><td>ชื่อ นามสกุล :</td><td>'.$node->field_customer_admin_name[0]["value"].'</td></tr>';
+    $output .= '<tr><td>เบอร์โทรศัพท์ :</td><td>'.$node->field_customer_admin_phone[0]["value"].'</td></tr>';
+    $output .= '<tr><td>อีเมล :</td><td>'.$node->field_customer_admin_email[0]["value"].'</td></tr>';
+    $output .= '<tr><td></td><td><input type="hidden" name="nid" value="'.$node->nid.'"><input type="submit" name="confirm_mail" value="ส่งอีเมล"></td></tr></table>';
+    $output .= '</form>';  
+  } else {
+    $output .= '<form  action="?" method="post">';
+    $output .= '<table><tr><td>โดเมนที่ต้องการลบ</td><td><input type="text" size="60" name="domain_name" value="'.$_POST["domain_name"].'"/></td></tr>';
+    $output .= '<tr><td>อีเมล</td><td><input type="text" name="admin_email" size="60" value="'.$_POST["admin_email"].'"/></td></tr>';
+    $output .= '<tr><td></td><td><input type="submit" name="save_settings" value="ยืนยัน"></td></tr></table>';
+    $output .= '</form>';   
+  }
+  return $output;
 }
 
 function webiz_crm_sync_settings() {
@@ -60,7 +334,10 @@ function webiz_crm_cron() {
   $last_update = variable_get('webiz_crm_stat_last_update',time()-3600);
   $update_hour = date("g",$last_update );
   $this_hour = date("g");
-  if($this_hour!=$update_hour)  webiz_crm_update_register_stat();
+  if($this_hour!=$update_hour) {
+    webiz_crm_update_register_stat();
+    webiz_crm_mailer_cron();
+  } 
   //job_queue_add('drupal_mail', 'test queue', array('webiz_crm', 'mail', 'note@7republic.com', 'th', array('body'=>'body','subject'=>'subject'), $from, TRUE) , '', TRUE);
   $update_day = date("j",$last_update);
   $this_day = date("j");
@@ -106,6 +383,10 @@ function webiz_crm_syn_data() {
       $node->field_customer_register_ref[0]['value'] = $value['register_ref'];  
       $node->field_customer_signup_date[0]['value'] = $value['signup_date'];
       $node->field_customer_webiz_id[0]['value'] = $value['user_id'];
+      $node->field_customer_owner_name[0]['value'] = $value['owner_name'];
+      //change soon
+      $node->field_customer_optin_gmail[0]['value'] = $value['accepted_gmail'];
+      $node->field_customer_optin_gplace[0]['value'] = $value['accepted_gplace'];
       db_query("INSERT INTO {webiz_crm_gxbo_xml_data} VALUES (%d,'%s','%s',%d) ",$value['user_id'],$value['owner_name'],$value['bizdescription'],$value['final_url_used']);
     }    
     $node->title = $value['bizname'];
@@ -124,13 +405,17 @@ function webiz_crm_syn_data() {
     $node->field_customer_phone[0]['value'] = $value['telephone']; 	 	
     $node->field_customer_email[0]['value'] = $value['user_mail'];	 	 	 	 	
     $node->field_customer_custom_domain[0]['value'] = $value['field_site_domain_value'];
+    $node->field_customer_active_domain[0]['value'] = $value['field_site_active_domain_value'];
+    if($node->field_customer_user_agent[count($node->field_customer_user_agent)-1]['value'] != $value['field_site_user_agent_value'])
+      $node->field_customer_user_agent[]['value'] = $value['field_site_user_agent_value'];
     $node->field_customer_site_status[0]['value'] = $value['status'];
-    //print_r($node);exit;
+    if($node->field_customer_site_status[0]['value']==1 && $node->field_website_quality[0]['value'] == '') $node->field_website_quality[0]['value'] = 'published';
+    //print_r($node);//exit;
     node_save($node);
     if($new_node) db_query('UPDATE casetracker_case set pid=1, case_priority_id=3, case_type_id=10, case_status_id=4 where nid=%d;',$node->nid);
-    $GTBO_array[] = $value;
+    if($value['status']==1) $GTBO_array[] = $value;
   }
-  webiz_crm_GTBO_xml_post($GTBO_array);
+  //webiz_crm_GTBO_xml_post($GTBO_array);
   return;
 }
 
@@ -145,13 +430,13 @@ function webiz_crm_GTBO_xml_post($GTBO_array) {
     $xml_payload .= '<business format-version="2.0"><partner-reference>'. $value['partner_reference'] .'</partner-reference>';
     $xml_payload .= '<sign-up-date>'.date("Ymd\THis\Z",$value['signup_date']).'</sign-up-date>';
     $owner_name = explode (' ',$value['owner_name']);
-    $xml_payload .= '<given-name>'.$owner_name[0].'</given-name><family-name>'.$owner_name[1].'</family-name><email>'.urlencode($value['user_mail']).'</email><language>th</language>';
-    $xml_payload .= '<final-url>http://'.$value['field_site_domain_value'].'</final-url><temporary-url>http://'.$value['webiz_domain'].'</temporary-url><final-url-being-used>'.($value['final_url_used'] ? 'True' : '').'</final-url-being-used>';
-    $xml_payload .= '<business-name>'.webiz_crm_urlencode($value['bizname']).'</business-name><business-description>'.webiz_crm_urlencode($value['bizdescription']).'</business-description>';
+    $xml_payload .= '<given-name><![CDATA['.webiz_crm_urlencode($owner_name[0]).']]></given-name><family-name><![CDATA['.webiz_crm_urlencode($owner_name[1]).']]></family-name><email><![CDATA['.urlencode($value['user_mail']).']]></email><language>th</language>';
+    $xml_payload .= '<final-url><![CDATA[http://'.$value['field_site_domain_value'].']]></final-url><temporary-url><![CDATA[http://'.$value['webiz_domain'].']]></temporary-url><final-url-being-used>'.($value['final_url_used'] ? 'True' : '').'</final-url-being-used>';
+    $xml_payload .= '<business-name><![CDATA['.truncate_utf8(webiz_crm_urlencode($value['bizname']),60,true,true).']]></business-name><business-description><![CDATA['.truncate_utf8(webiz_crm_urlencode($value['bizdescription']),60,true,true).']]></business-description>';
     $market_segment = explode(' - ',$value['bizcat']);
-    $xml_payload .= '<market-segments><segment>'.$market_segment[0].'</segment>'. ($market_segment[1] ? '<segment>'.$market_segment[1].'</segment>' :'') .'</market-segments>';
+    $xml_payload .= '<market-segments><segment>'.truncate_utf8($market_segment[0],50,true,true).'</segment>'. ($market_segment[1] ? '<segment>'.truncate_utf8($market_segment[1],50,true,true).'</segment>' :'') .'</market-segments>';
     $address_line1 = $value['address'] .' ' . $value['subdistrict'] .' '. $value['district'];
-    $xml_payload .= '<address><address-line-1>'.webiz_crm_urlencode($address_line1).'</address-line-1><address-line-2></address-line-2><city>'.$value['province'].'</city>	<state></state>	<region></region>	<post-code>'.$value['zipcode'].'</post-code>	<country-code>TH</country-code> </address>';
+    $xml_payload .= '<address><address-line-1><![CDATA['.truncate_utf8(webiz_crm_urlencode($address_line1),60,true,true).']]></address-line-1><address-line-2></address-line-2><city>'.$value['province'].'</city>	<state></state>	<region></region>	<post-code>'.$value['zipcode'].'</post-code>	<country-code>TH</country-code> </address>';
     $xml_payload .= '<opt-in-email>'.($value['accepted_gmail'] ? 'True' : '').'</opt-in-email><opt-in-post>'.($value['accepted_gmail'] ? 'True' : '').'</opt-in-post><opt-in-places>'.($value['accepted_gplace'] ? 'True' : '').'</opt-in-places>';
     $xml_payload .= '<account-deleted>False</account-deleted></business>';
   }             
@@ -199,10 +484,10 @@ function webiz_crm_GTBO_xml_post($GTBO_array) {
 }
 
 function webiz_crm_urlencode($string) {
-    //$entities = array('%25', '%21', '%2A', '%27', '%28', '%29', '%3B', '%3A', '%40', '%26', '%3D', '%2B', '%24', '%2C', '%2F', '%3F',  '%23', '%5B', '%5D');
-    //$replacements = array("%",'!', '*', "'", "(", ")", ";", ":", "@", "&", "=", "+", "$", ",", "/", "?",  "#", "[", "]");
-    $entities = array('%26');
-    $replacements = array("&");
+    $entities = array('%25', '%21', '%2A', '%27', '%28', '%29', '%3B', '%3A', '%40', '%26', '%3D', '%2B', '%24', '%2C', '%2F', '%3F',  '%23', '%5B', '%5D');
+    $replacements = array("%",'!', '*', "'", "(", ")", ";", ":", "@", "&", "=", "+", "$", ",", "/", "?",  "#", "[", "]");
+    //$entities = array('%26');
+    //$replacements = array("&");
     return str_replace($replacements, $entities,  $string);
 }
 
@@ -312,7 +597,7 @@ function webiz_crm_report_publish_graph(){$rcount = 0;
           data.addColumn('number', 'publish');
           data.addColumn('number', 'unpublish');
           data.addColumn('number', 'ban');
-          data.addRows(7);";
+          data.addRows(8);";
   $output .= $data;
   $output .= "var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
           chart.draw(data, {width: 1000, height: 600,title: 'Publish Graph',titlePosition: 'in' , pointSize: 4,
@@ -320,6 +605,179 @@ function webiz_crm_report_publish_graph(){$rcount = 0;
           vAxis:{title: 'Sum', titleTextStyle: {color: '#FF0000'}}});}</script>";
   $output .= '<div id="chart_div"></div>';
   return $output;
+}
+
+function webiz_crm_report_callcenter_graph(){
+ // $output = '<a href="/report/line_graph_gtbo">กราฟ 24 ชม. ล่าสุด</a> | <a href="/report/line_graph_gtbo?r=week">กราฟ 7 วัน ล่าสุด</a>';
+  //echo arg(2);
+  //echo $last_update;
+  $time_now = time();
+  $this_day  = mktime(0, 0, 0, date("m",$time_now)  , date("d",$time_now), date("Y",$time_now));
+  $last_7day = $this_day - (6*24*60*60);//86400
+  $start_day = $last_7day;
+  for($i=0;$i<7;$i++) { 
+     $finish_day = $start_day + 86400;
+     $sql = "SELECT count(cid) as sum FROM {comments} WHERE uid in (3,4,5,6,8) and thread =  '01/' and timestamp >= " .$start_day."  and timestamp < ".$finish_day;//$output .= $sql .' : start '.date('d-m-Y H:i:s',$start_day).' to '.date('d-m-Y H:i:s',$finish_day).'<br>';
+     $stat_result  =  db_result(db_query($sql));   
+     //echo 'result = '.$stat_result; 
+     $data .= "['". date('d-m-Y',$start_day) ."',".$stat_result ."],";
+     $start_day = $finish_day;
+  }
+  $data =  substr($data,0,-1);$showEvery = 1; 
+  $xtitle = 'Last 7 Days';
+  $output .= "<script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
+      <script type=\"text/javascript\">
+        google.load('visualization', '1', {packages:['corechart']});
+        google.setOnLoadCallback(drawChart);
+        function drawChart() {
+          var data = new google.visualization.DataTable();
+          data.addColumn('string', 'Time');
+          data.addColumn('number', 'First comment counts');
+          data.addRows([";
+  $output .= $data;
+  $output .= "]);
+          var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+          chart.draw(data, {width: 850, height: 600,title: 'Callcenter Graph',titlePosition: 'in' , pointSize: 4,
+          hAxis: {title: '$xtitle', titleTextStyle: {color: '#FF0000'},slantedText:true,showTextEvery:$showEvery},
+          vAxis:{title: 'Sum', titleTextStyle: {color: '#FF0000'}}});}</script>";
+  $output .= '<div id="chart_div"></div>';
+  return $output;
+}
+
+function webiz_crm_gtbo_excel_export(){
+  $sql = "SELECT 
+    ctc.field_customer_custom_domain_value as domain,
+    ctc.field_customer_webiz_domain_value as webiz_domain,
+    ctc.field_customer_active_domain_value as active_domain,
+    ctc.field_customer_admin_name_value as admin,
+    ctc.field_customer_admin_phone_value as phone,
+    ctc.field_customer_admin_email_value as email,
+    n.title as bizname,
+    ctc.field_customer_bizcat_value as bizcat,
+    if(ctc.field_customer_domain_status_value=1,'ส่งเอกสารแล้ว','ยังไม่ส่งเอกสาร' ) as domain_status,
+    ctc.field_customer_address_value as address,
+    ctc.field_customer_subdistrict_value as subdistrict,
+    ctc.field_customer_district_value as district,
+    ctc.field_customer_province_value as province,
+    ctc.field_customer_zipcode_value as zipcode,
+    ctc.field_customer_latitude_value as latitude,
+    ctc.field_customer_longitude_value as longitude,
+    ctc.field_customer_signup_date_value as signup 
+  FROM {content_type_customer ctc} join {webiz_crm_gxbo_xml_data as gxbo} ON (ctc.field_customer_webiz_id_value = gxbo.uid)
+  join {node as n} on (ctc.nid = n.nid)
+  WHERE field_customer_site_status_value = 1;";
+  $strFileName = "gtbo/gtbo".date('Y-m-d').".csv";
+  $fhandle = fopen($strFileName, 'w');
+  $header =  '"โดเมน","webiz โดเมน","Active Domain","ชื่อ - นามสกุล","เบอร์โทรศัพท์","อีเมล","ชื่อบริษัท","หมวดหมู่ธุรกิจ","สถานะโดเมน","เลขที่","แขวง","เขต","จังหวัด","รหัสไปรษณีย์","latitude","longitude","วันที่สมัคร"' ."\n";
+  fwrite($fhandle, $header);
+  $result = db_query($sql);
+  while($row = db_fetch_array($result)){
+    $record =  '"'.$row['domain'].'","'.$row['webiz_domain'].'","'.$row['active_domain'].'","'.$row['admin'].'","'.$row['phone'].'","'.$row['email'].'","'.$row['bizname'].'","'.$row['bizcat'].'","'.$row['domain_status'].'","'.$row['address'].'","'.$row['subdistrict'].'","'.$row['district'].'","'.$row['province'].'","'.$row['zipcode'].'","'.$row['latitude'].'","'.$row['longitude'].'","'.date('Y-m-d H:i:s',$row['signup']).'"' ."\n";
+    fwrite($fhandle, $record);
+  }
+  fclose($fhandle);
+  exit;
+}
+
+function webiz_crm_excel_export(){
+if(isset($_POST['no_doc_export_submit']))  {
+  header("Content-type: application/csv");
+  header("Content-Disposition: attachment; filename=no_doc.csv");
+  header('Cache-Control: no-cache, must-revalidate');
+  header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); //echo $query;
+  $sql = "SELECT 
+    ctc.field_customer_custom_domain_value as domain,
+    gxbo.owner_name as owner_name,
+    ctc.field_customer_admin_name_value as admin,
+    ctc.field_customer_admin_phone_value as phone,
+    ctc.field_customer_admin_email_value as email,
+    n.title as bizname,
+    ctc.field_customer_bizcat_value as bizcat,
+    ctc.field_customer_address_value as address,
+    ctc.field_customer_subdistrict_value as subdistrict,
+    ctc.field_customer_district_value as district,
+    ctc.field_customer_province_value as province,
+    ctc.field_customer_zipcode_value as zipcode,
+    ctc.field_customer_signup_date_value as signup 
+  FROM {content_type_customer ctc} join {webiz_crm_gxbo_xml_data as gxbo} ON (ctc.field_customer_webiz_id_value = gxbo.uid)
+  join {node as n} on (ctc.nid = n.nid)
+  WHERE field_customer_domain_status_value is NULL;";
+  echo '"โดเมน","ชื่อ - นามสกุล","ชื่อ - นามสกุล ผู้ดูแล","เบอร์โทรศัพท์","อีเมล","ชื่อบริษัท","หมวดหมู่ธุรกิจ","เลขที่","แขวง","เขต","จังหวัด","รหัสไปรษณีย์"' ."\n";
+  $result = db_query($sql);
+  while($row = db_fetch_array($result)){
+    echo '"'.$row['domain'].'","'.$row['owner_name'].'","'.$row['admin'].'","'.$row['phone'].'","'.$row['email'].'","'.$row['bizname'].'","'.$row['bizcat'].'","'.$row['address'].'","'.$row['subdistrict'].'","'.$row['district'].'","'.$row['province'].'","'.$row['zipcode'].'","'.date('Y-m-d H:i:s',$row['signup']).'"' ."\n";
+  }
+  exit;
+} elseif(isset($_POST['no_pub_export_submit'])){
+  header("Content-type: application/csv");
+  header("Content-Disposition: attachment; filename=no_publish.csv");
+  header('Cache-Control: no-cache, must-revalidate');
+  header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); //echo $query;
+  $sql = "SELECT 
+    ctc.field_customer_custom_domain_value as domain,
+    gxbo.owner_name as owner_name,
+    ctc.field_customer_admin_name_value as admin,
+    ctc.field_customer_admin_phone_value as phone,
+    ctc.field_customer_admin_email_value as email,
+    n.title as bizname,
+    ctc.field_customer_bizcat_value as bizcat,
+    ctc.field_customer_address_value as address,
+    ctc.field_customer_subdistrict_value as subdistrict,
+    ctc.field_customer_district_value as district,
+    ctc.field_customer_province_value as province,
+    ctc.field_customer_zipcode_value as zipcode,
+    ctc.field_customer_signup_date_value as signup 
+  FROM {content_type_customer ctc} join {webiz_crm_gxbo_xml_data as gxbo} ON (ctc.field_customer_webiz_id_value = gxbo.uid)
+  join {node as n} on (ctc.nid = n.nid)
+  WHERE ctc.field_customer_domain_status_value = 1 and ctc.field_customer_site_status_value = 0 ;";
+  echo '"โดเมน","ชื่อ - นามสกุล","ชื่อ - นามสกุล ผู้ดูแล","เบอร์โทรศัพท์","อีเมล","ชื่อบริษัท","หมวดหมู่ธุรกิจ","เลขที่","แขวง","เขต","จังหวัด","รหัสไปรษณีย์"' ."\n";
+  $result = db_query($sql);
+  while($row = db_fetch_array($result)){
+    echo '"'.$row['domain'].'","'.$row['owner_name'].'","'.$row['admin'].'","'.$row['phone'].'","'.$row['email'].'","'.$row['bizname'].'","'.$row['bizcat'].'","'.$row['address'].'","'.$row['subdistrict'].'","'.$row['district'].'","'.$row['province'].'","'.$row['zipcode'].'","'.date('Y-m-d H:i:s',$row['signup']).'"' ."\n";
+  } 
+  exit;
+} elseif(isset($_POST['pub_but_notpass_export_submit'])){
+  header("Content-type: application/csv");
+  header("Content-Disposition: attachment; filename=pub_but_notpass.csv");
+  header('Cache-Control: no-cache, must-revalidate');
+  header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); //echo $query;
+  $sql = "SELECT 
+    ctc.field_customer_custom_domain_value as domain,
+    gxbo.owner_name as owner_name,
+    ctc.field_customer_admin_name_value as admin,
+    ctc.field_customer_admin_phone_value as phone,
+    ctc.field_customer_admin_email_value as email,
+    n.title as bizname,
+    ctc.field_customer_bizcat_value as bizcat,
+    ctc.field_customer_address_value as address,
+    ctc.field_customer_subdistrict_value as subdistrict,
+    ctc.field_customer_district_value as district,
+    ctc.field_customer_province_value as province,
+    ctc.field_customer_zipcode_value as zipcode,
+    ctc.field_customer_signup_date_value as signup 
+  FROM {content_type_customer ctc} join {webiz_crm_gxbo_xml_data as gxbo} ON (ctc.field_customer_webiz_id_value = gxbo.uid)
+  join {node as n} on (ctc.nid = n.nid)
+  WHERE ctc.field_website_quality_value = 'published' ORDER BY ctc.nid DESC;";
+  echo '"โดเมน","ชื่อ - นามสกุล","ชื่อ - นามสกุล ผู้ดูแล","เบอร์โทรศัพท์","อีเมล","ชื่อบริษัท","หมวดหมู่ธุรกิจ","เลขที่","แขวง","เขต","จังหวัด","รหัสไปรษณีย์"' ."\n";
+  $result = db_query($sql);
+  while($row = db_fetch_array($result)){
+    echo '"'.$row['domain'].'","'.$row['owner_name'].'","'.$row['admin'].'","'.$row['phone'].'","'.$row['email'].'","'.$row['bizname'].'","'.$row['bizcat'].'","'.$row['address'].'","'.$row['subdistrict'].'","'.$row['district'].'","'.$row['province'].'","'.$row['zipcode'].'","'.date('Y-m-d H:i:s',$row['signup']).'"' ."\n";
+  } 
+  exit;
+}
+
+
+$output .= '<form id="no_doc_export" action="/report/csv_export" method="post" target="csv_export_iframe">';
+$output .= '<input type="submit" id="no_doc_export_submit" name="no_doc_export_submit" value="ยังไม่ได้รับโดเมน - รอเอกสาร"/>';
+$output .= '</form>';
+$output .= '<form id="no_pub_export" action="/report/csv_export" method="post" target="csv_export_iframe">';
+$output .= '<input type="submit" id="no_pub_export_submit" name="no_pub_export_submit" value="จดโดเมนแล้ว แต่ยังไม่เผยแพร่"/>';
+$output .= '</form>';
+$output .= '<form id="pub_but_notpass" action="/report/csv_export" method="post" target="csv_export_iframe">';
+$output .= '<input type="submit" id="pub_but_notpass_export_submit" name="pub_but_notpass_export_submit" value="เผยแพร่ แล้วแต่เว็บยังไม่เรียบร้อย"/>';
+$output .= '</form>';
+$output .= '<iframe id="csv_export_iframe" style="display:block;"></iframe>';
+return $output;
 }
 
 function webiz_crm_job_queue_functions() {
@@ -335,13 +793,18 @@ function webiz_crm_mail($key, &$message, $params) {
 }
 
 function webiz_crm_mailer_cron(){
-    $sql = "SELECT nid FROM node WHERE type = 'mailer'";
+    $sql = "SELECT n.nid FROM {node as n} JOIN {content_type_mailer as ctm} on (n.nid = ctm.nid) WHERE type = 'mailer' and ctm.field_mailer_sending_delay_value>0";
     $result = db_query($sql);
     while($row = db_fetch_array($result)) {
       $mailer = node_load($row['nid']);
-      $time_gt = 0;//time() - ( 86400 * $mailer->field_mailer_sending_delay[0]['value']);
-      $time_lt = 140000000000000;//$time_gt + 86400;
-      $sub_sql = db_query("SELECT n.nid FROM {node as n} INNER JOIN {content_type_customer as ctc} on (n.nid = ctc.nid) WHERE ctc.field_customer_signup_date_value >= %d and ctc.field_customer_signup_date_value < %d",$time_gt,$time_lt);
+      $time_lt = time() - ( 86400 * $mailer->field_mailer_sending_delay[0]['value']);
+      $time_gt = $time_lt - 3600;//$time_gt + 86400;
+      $sub_sql_string = "SELECT n.nid FROM {node as n} INNER JOIN {content_type_customer as ctc} on (n.nid = ctc.nid) WHERE ctc.field_customer_signup_date_value > ".$time_gt." and ctc.field_customer_signup_date_value <= ".$time_lt;
+      if($mailer->field_mailer_condition[0]['value']) {
+        $sub_sql_string .= " and ".$mailer->field_mailer_condition[0]['value'];
+      }
+      watchdog('mailer_watch','mail customer query {'.$sub_sql_string.'}');
+      $sub_sql = db_query($sub_sql_string);
       while($customer_nid = db_fetch_array($sub_sql)) {
         $customer = node_load($customer_nid['nid']);
         $to = $customer->field_customer_admin_email[0]['value'];//'note@7republic.com';//
@@ -354,13 +817,545 @@ function webiz_crm_mailer_cron(){
           'subject' => $subject,
           //'headers' => $headers
         );
-        $description = 'mail to '. $to;
-       // echo '<pre>';
-       // print_r($params);
-       // echo '</pre>';
-        job_queue_add('drupal_mail', $description, array('webiz_crm', 'mail', $to, $language, $params, $from, TRUE) , '', TRUE);
+        $description = 'mail('.$mailer->title.') to '. $to;
+        watchdog('mailer_watch',$description);
+        //job_queue_add('drupal_mail', $description, array('webiz_crm', 'mail', $to, $language, $params, $from, TRUE) , '', TRUE);
       }
     }
     //$output ='';
     return ;//$output;
+}
+
+function webiz_crm_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {global $user;
+  //Site's API /*
+  if($node->type == 'customer'){
+    switch ($op) {
+      case 'view': //echo '<!--<pre>';print_r($node);echo '</pre>-->';
+      if($_GET['domain']) {
+        $node->field_customer_domain_status[0]['value'] = $_GET['domain'];
+        $node->content['field_customer_domain_status']['field']['items'][0]['#item']['value'] = $_GET['domain'];
+          
+          $mailer = node_load(10209);
+          $to = $node->field_customer_admin_email[0]['value'];//'note@7republic.com';//
+          $subject = token_replace($mailer->field_mailer_subject[0]['value'],'node',$node);
+          $body = token_replace($mailer->body,'node',$node);
+          $from = 'crm@webiz.co.th';
+          $language = 'th';
+          $params = array('body' => $body,'subject' => $subject);
+          $description = 'mail('.$mailer->title.') to '. $to;
+          watchdog('mailer_watch',$description);
+          //job_queue_add('drupal_mail', $description, array('webiz_crm', 'mail', $to, $language, $params, $from, TRUE) , '', TRUE);
+        node_save($node);
+      }
+      if($_GET['checking']) {
+        $node->field_customer_checking_status[0]['value'] = $_GET['checking'];
+        $node->content['field_customer_checking_status']['field']['items'][0]['#item']['value'] = $_GET['checking'];
+        node_save($node);
+      }
+
+      if($_GET['block']){    
+         $uid = $node->field_customer_webiz_id[0]['value']; 
+         if($_GET['block']==1) {$webstatus = -1;$ustatus = 0;} elseif($_GET['block']==2) {$ustatus = 1;$webstatus = 0;}
+         //cross database part
+         db_set_active('webiz'); 
+         //block user
+         db_query('UPDATE users SET status=%d WHERE uid=%d',$ustatus,$uid);
+         //block site
+         db_query('UPDATE node SET status=%d WHERE type=\'site\' and uid=%d',$webstatus,$uid);
+         $result = db_query('SELECT nid FROM node WHERE type=\'site\' and uid=%d LIMIT 1',$uid);
+         $nid = db_result($result);
+         db_query('DELETE FROM cache_content WHERE cid like \'content:%d:%%\'',$nid);
+         db_set_active('default');
+         $node->field_customer_site_status[0]['value'] = $webstatus;
+         $node->content['field_customer_site_status']['field']['items'][0]['#item']['value'] = $webstatus;  
+         node_save($node);
+      } 
+         
+      //echo "<pre>";print_r($node);echo "</pre>";
+      $set_block_status = '<input type="button" onclick="location.href=\'?block=1\';" value="บล็อกเว็บผิดกฎ" />
+                        <input type="button" onclick="location.href=\'?block=2\';" value="ปลดบล็อก" />';
+      $set_domain_status = '<input type="button" onclick="location.href=\'?domain=1\';" value="จดทะเบียนแล้ว" />';//จดทะเบียนแล้ว</a>';
+      $set_checking_status = '<input type="button" onclick="location.href=\'?checking=10\';" value="ผ่านการอนุมัติ" />
+                        <input type="button" onclick="location.href=\'?checking=1\';" value="ไม่ผ่าน - ธุรกิจขายตรง" />
+                        <input type="button" onclick="location.href=\'?checking=2\';" value="ไม่ผ่าน - ผิดกฏหมาย/ลิขสิทธิ์" />';
+      $node->content['set_checking_status']= array(
+        '#value' => $set_checking_status,
+        '#weight' => -4);
+      $node->content['set_domain_status']= array(
+        '#value' => $set_domain_status,
+        '#weight' => -2);
+      
+      if($user->uid==1)  
+        $node->content['set_block_status']= array(
+          '#value' => $set_block_status,
+          '#weight' => 16);
+      break;
+    }
+  } elseif($node->type =='mailer') {
+    switch ($op) {
+      case 'view':
+        //$customer_nid = db_result(db_query("SELECT n.nid FROM {node as n} INNER JOIN {content_type_customer as ctc} on (n.nid = ctc.nid) LIMIT 1"));
+        $customer = node_load(5466);
+        $node->content['field_mailer_subject']['field']['items'][0]['#item']['safe'] = token_replace($node->content['field_mailer_subject']['field']['items'][0]['#item']['value'],'node',$customer);
+        $node->content['body']['#value'] =  token_replace($node->content['body']['#value'],'node',$customer);
+      break;
+    }
+  }
+}
+
+function webiz_crm_note_test(){
+ 
+  db_set_active('webiz');
+  $result = db_query("SELECT n.uid,site.field_site_active_domain_value domain
+   FROM node n join content_type_site site on n.nid = site.nid
+   WHERE n.`type` LIKE 'site' AND site.field_site_active_domain_value IS NOT NULL ");
+  //echo db_result($result);exit;
+  db_set_active('default');
+  while($row = db_fetch_array($result)) {
+    echo $row['uid'].','.$row['domain'];
+    db_query('UPDATE content_type_customer SET field_customer_active_domain_value=\'%s\' WHERE field_customer_webiz_id_value =\'%d\'',$row['domain'], $row['uid']);
+   }
+  //$result = db_query('SELECT nr.body FROM {node as n}  JOIN {node_revision as nr} on (nr.nid = n.nid) WHERE n.body LIKE "%ชำระค่าสินค้า%"');
+
+  //block user
+/*  $result = db_query('SELECT u.uid FROM {users as u} JOIN {node as n} on (n.uid = u.uid and n.type = \'site\') JOIN {content_type_site as cts} on (cts.nid = n.nid) WHERE n.status = 1');
+ //$result = db_query('SELECT gxbo.uid,gxbo.owner_name FROM {webiz_crm_gxbo_xml_data as gxbo} INNER JOIN {content_type_customer as ctc} ON (ctc.field_customer_webiz_id_value = gxbo.uid) WHERE ctc.field_customer_owner_name_value = \'\'');
+// while($row = db_fetch_array($result)) {
+ //    $output .= 'uid='.$row['uid'].'|name='.$row['owner_name'].'<br>';
+ db_set_active('default');
+// }
+//  echo db_result($result);
+ while($row = db_fetch_array($result)) {
+    db_query('UPDATE content_type_customer SET field_customer_site_status_value=1 WHERE field_customer_webiz_id_value=\'%d\'',$row['uid']);
+    //$new_email = 'info@'.$row['domain'];
+    //$output .= $row['mail'] . '=>' . $row['domain'].'=>'.$new_email .'<br>';
+    //db_query('UPDATE users SET mail=\'%s\' WHERE uid=\'%d\'',$new_email,$row['uid']);
+    //db_query('UPDATE webiz_admin_contact SET admin_email=\'%s\' WHERE uid=\'%d\'',$new_email,$row['uid']);
+    //db_query('UPDATE webiz_user_address SET email=\'%s\' and changed=%d WHERE uid=\'%d\'',$new_email,time(),$row['uid']);
+  }
+//echo '<br>';
+  
+  //$result = db_query('SELECT count(*) FROM  {content_type_customer as ctc}  WHERE ctc.field_customer_site_status_value = 1');
+  //echo db_result($result);
+  //db_query('UPDATE content_type_customer SET field_customer_site_status_value=1 WHERE field_customer_webiz_id_value=\'%d\'',$row['uid']);
+/*  mimemailtest
+  $file_path = '/www/domain/webiz.co.th/htdocs/sites/crm.webiz.co.th/modules/crm/';
+  $id = 'xmlfeed.php';//'1024.zip';//get id from database
+  
+
+  $to = 'benhatira@gmail.com';//'note@7republic.com';//
+  $subject = 'test subject';
+  $body = 'test body';
+  $from = 'webiz@webiz.co.th';
+  $language = 'th';
+  // echo '<pre>';
+  // print_r($params);
+  // echo '</pre>';
+  $file = new stdClass();
+  $file->filename = $id;
+  $file->filepath = $file_path . '/' . $file->filename;
+  mimemail($from, $to, $subject, $body, false, array(), $body, array($file));
+  return '1';//echo'1';return;//exit;
+  */
+  //return $output;
+}
+
+function webiz_crm_publish_csv(){
+    header("Content-type: application/csv");
+    header("Content-Disposition: attachment; filename=published.csv");
+    header('Cache-Control: no-cache, must-revalidate');
+    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+    $sql = "SELECT 
+      ctc.field_customer_custom_domain_value as domain,
+      ctc.field_customer_owner_name_value as owner_name,
+      ctc.field_customer_admin_name_value as admin_name,
+      ctc.field_customer_admin_phone_value as phone,
+      ctc.field_customer_admin_email_value as email,
+      n.title as bizname,
+      ctc.field_customer_bizcat_value as bizcat,
+      ctc.field_customer_address_value as address,
+      ctc.field_customer_subdistrict_value as subdistrict,
+      ctc.field_customer_district_value as district,
+      ctc.field_customer_province_value as province,
+      ctc.field_customer_zipcode_value as zipcode,
+      ctc.field_customer_signup_date_value as signup 
+      ctc.field_customer_optin_gmail_value as accepted_gmail,
+      ctc.field_customer_optin_gplace_value as accepted_gplace,
+    FROM {content_type_customer ctc}
+    join {node as n} on (ctc.nid = n.nid)
+    WHERE field_website_quality_value = 'pass';";
+    echo '"โดเมน","ชื่อ - นามสกุล","ชื่อ - นามสกุล ผู้ดูแล","เบอร์โทรศัพท์","อีเมล","ชื่อบริษัท","หมวดหมู่ธุรกิจ","เลขที่","แขวง","เขต","จังหวัด","รหัสไปรษณีย์"' ."\n";
+    $result = db_query($sql);
+    while($row = db_fetch_array($result)){
+      echo '"'.$row['domain'].'","'.$row['owner_name'].'","'.$row['admin_name'].'","'.$row['phone'].'","'.$row['email'].'","'.$row['bizname'].'","'.$row['bizcat'].'","'.$row['address'].'","'.$row['subdistrict'].'","'.$row['district'].'","'.$row['province'].'","'.$row['zipcode'].'","'.date('Y-m-d H:i:s',$row['signup']).'"' ."\n";
+    }
+    exit;
+}
+
+function webiz_crm_xml_repost(){
+   $xml_post_url = "https://gxbo-thailand-hr.appspot.com/submit_xml";
+   //$post_status = 'published'; // just set status here
+   
+   $last_update = 0;//variable_get('webiz_crm_gxbo_last_update',0);
+   echo 'last updated = '.date("Y-m-d H:i:s",$last_update);
+   $date_format = "Ymd\THis\Z";
+   //$xml_post_url = "http://webiz.co.th/sites/crm.webiz.co.th/modules/crm/post.php";
+   $secret_key = "90c6a0f677fc4fc7bff9c87cb325eb30";
+   $customer_count =  db_result(db_query("SELECT count(*) FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid)
+    WHERE ctc.field_website_quality_value IS NOT NULL and n.changed > %d ;",$last_update)); //and ctc.field_website_quality_value = 'published'
+   $per_round = 100;//echo $customer_count;exit;
+   $loop = $customer_count/$per_round +1;echo $loop. 'pages left';//exit;
+   $begin = 0;
+   $reach = $loop;
+   for($i= $begin;$i < $reach;$i++) {
+       $start = $i*100;
+       $nid_result = db_query("SELECT n.nid FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
+       WHERE ctc.field_website_quality_value IS NOT NULL and n.changed > %d  ORDER BY n.changed ASC LIMIT %d,%d;",$last_update,$start,$per_round);//200,100);
+       // create XML payload
+       $xml_payload = 'businesses=<?xml version="1.0" encoding="UTF-8"?><businesses secret-key="'.$secret_key.'">';
+         
+       while($row =  db_fetch_array($nid_result)) {
+         $node = node_load($row['nid'], NULL, TRUE);
+         $sql = "SELECT gxbo.*  FROM {webiz_crm_gxbo_xml_data as gxbo} WHERE gxbo.uid = %d";
+         $name_and_desc = db_fetch_array(db_query($sql,$node->field_customer_webiz_id[0]['value']));
+         $owner_name = $name_and_desc['owner_name'];
+         if($owner_name == '') $owner_name = $node->field_customer_admin_name[0]['value'];
+         $bizdescription = $name_and_desc['bizdescription'];
+
+/*         $xml_payload .= '<business format-version="2.0"><partner-reference>'. $node->field_customer_partner_ref[0]['value'] .'</partner-reference>';
+          $xml_payload .= '<sign-up-date>'.date($date_format,$node->field_customer_signup_date[0]['value']).'</sign-up-date>';
+          $owner_name = explode (' ',$owner_name);
+          $xml_payload .= '<given-name><![CDATA['.webiz_crm_urlencode($owner_name[0]).']]></given-name>'.
+                          '<family-name><![CDATA['.webiz_crm_urlencode($owner_name[1]).']]></family-name>'.
+                          '<email><![CDATA['.urlencode($node->field_customer_email[0]['value']).']]></email>'.
+                          '<language>th</language>';
+
+          $xml_payload .= '<temporary-url><![CDATA[http://'.webiz_crm_urlencode($node->field_customer_webiz_domain[0]['value']).']]></temporary-url>'.
+                          '<final-url><![CDATA[http://'.webiz_crm_urlencode($node->field_customer_custom_domain[0]['value']).']]></final-url>'.
+                          '<final-url-being-used>'.($node->field_customer_domain_status[0]['value'] ? 'True' : '').'</final-url-being-used>';
+                          
+          $xml_payload .= '<business-name><![CDATA['.truncate_utf8(webiz_crm_urlencode($node->title),60,true,true).']]></business-name>'.
+                          '<business-description><![CDATA['.truncate_utf8(webiz_crm_urlencode($bizdescription),60,true,true).']]></business-description>';
+          $market_segment = explode(' - ',$node->field_customer_bizcat[0]['value']);
+          $xml_payload .= '<market-segments><segment>'.truncate_utf8($market_segment[0],50,true,true).'</segment>'. 
+                           ($market_segment[1] ? '<segment>'.truncate_utf8($market_segment[1],50,true,true).'</segment>' :'') .'</market-segments>';
+          $address_line1 = $node->field_customer_address[0]['value'] .' ' . $node->field_customer_subdistrict[0]['value'] .' '. $node->field_customer_district[0]['value'];
+          $xml_payload .= '<address><address-line-1><![CDATA['.truncate_utf8(webiz_crm_urlencode($address_line1),60,true,true).']]></address-line-1>'.
+                          '<address-line-2></address-line-2><city>'.$node->field_customer_province[0]['value'].'</city><state></state><region></region>'.
+                          '<post-code>'.$node->field_customer_zipcode[0]['value'].'</post-code><country-code>TH</country-code>'.
+                          '</address>';
+          $xml_payload .= '<opt-in-email>'.($node->field_customer_optin_gmail[0]['value'] ? 'True' : '').'</opt-in-email>'.
+                          '<opt-in-post>'.($node->field_customer_optin_gmail[0]['value'] ? 'True' : '').'</opt-in-post>'.
+                          '<opt-in-places>'.($node->field_customer_optin_gplace[0]['value'] ? 'True' : '').'</opt-in-places>';*/
+         
+         $xml_payload .= '<business format-version="3.3"><partner-reference>'. $node->field_customer_partner_ref[0]['value'] .'</partner-reference>';
+         $xml_payload .= '<sign-up-date>'.date($date_format,$node->field_customer_signup_date[0]['value']).'</sign-up-date>';
+         $owner_name = explode (' ',$owner_name);
+         $xml_payload .= '<given-name><![CDATA['.webiz_crm_urlencode($owner_name[0]).']]></given-name>'.
+                         '<family-name><![CDATA['.webiz_crm_urlencode($owner_name[1]).']]></family-name>'.
+                         '<email><![CDATA['.urlencode($node->field_customer_email[0]['value']).']]></email>'.
+                         '<phone-number><![CDATA['.urlencode($node->field_customer_phone[0]['value']).']]></phone-number>'.
+                         '<language>th</language>';
+                         
+         $xml_payload .= '<temporary-url><![CDATA[http://'.webiz_crm_urlencode($node->field_customer_webiz_domain[0]['value']).']]></temporary-url>'.
+                         '<temporary-url-being-used>True</temporary-url-being-used>'.
+                         '<temporary-url-publish-date>'.date($date_format, $node->field_customer_signup_date[0]['value']).'</temporary-url-publish-date>'.
+                                        
+                         '<final-url><![CDATA[http://'.webiz_crm_urlencode($node->field_customer_custom_domain[0]['value']).']]></final-url>'.
+                         '<final-url-being-used>'.($node->field_customer_domain_status[0]['value'] ? 'True' : '').'</final-url-being-used>'.
+                         '<final-url-publish-date>'.date($date_format, $node->changed ).'</final-url-publish-date>'.
+                         '<searchable>True</searchable>';
+         $xml_payload .= '<business-name><![CDATA['.truncate_utf8(webiz_crm_urlencode($node->title),60,true,true).']]></business-name>'.
+                         '<business-description><![CDATA['.truncate_utf8(webiz_crm_urlencode($bizdescription),60,true,true).']]></business-description>';
+         $market_segment = explode(' - ',$node->field_customer_bizcat[0]['value']);
+         $xml_payload .= '<market-segments><segment>'.truncate_utf8($market_segment[0],50,true,true).'</segment>'. 
+                          ($market_segment[1] ? '<segment>'.truncate_utf8($market_segment[1],50,true,true).'</segment>' :'') .'</market-segments>';
+         $address_line1 = $node->field_customer_address[0]['value'] .' ' . $node->field_customer_subdistrict[0]['value'] .' '. $node->field_customer_district[0]['value'];
+         $xml_payload .= '<address><address-line-1><![CDATA['.truncate_utf8(webiz_crm_urlencode($address_line1),60,true,true).']]></address-line-1>'.
+                         '<address-line-2></address-line-2><city>'.$node->field_customer_province[0]['value'].'</city><state></state><region></region>'.
+                         '<post-code>'.$node->field_customer_zipcode[0]['value'].'</post-code><country-code>TH</country-code>'.
+                         '<latitude>'.$node->field_customer_latitude[0]['value'].'</latitude>'.
+                         '<longitude>'.$node->field_customer_longitude[0]['value'].'</longitude>'.
+                         '</address>';
+         //v3.2 information
+         $xml_payload .= '<ecommerce-url></ecommerce-url><ecommerce-signup-date></ecommerce-signup-date>'.
+                           '<product1-url></product1-url><product1-signup-date></product1-signup-date>'.
+                           '<product2-url></product2-url><product2-signup-date></product2-signup-date>'.
+                           '<adwords-voucher-code></adwords-voucher-code><adwords-url></adwords-url><adwords-voucher-request-date></adwords-voucher-request-date>';    
+         
+         $xml_payload .= '<opt-in-email>'.($node->field_customer_optin_gmail[0]['value'] ? 'True' : '').'</opt-in-email>'.
+                         '<opt-in-post>'.($node->field_customer_optin_gmail[0]['value'] ? 'True' : '').'</opt-in-post>'.
+                         '<opt-in-places>'.($node->field_customer_optin_gplace[0]['value'] ? 'True' : '').'</opt-in-places>';
+         $xml_payload .= '<signup-channel></signup-channel>';
+         $xml_payload .= '<account-deleted>False</account-deleted></business>';
+         //TODO : update $last_update
+         if($node->changed > $last_update ) $last_update = $node->changed;
+       }             
+       $xml_payload .= '</businesses>';
+       echo "\n".'<br><br>'.$i .' page,';
+       //echo $xml_payload ; //exit;
+       $ch = curl_init(); 
+       curl_setopt($ch, CURLOPT_URL, $xml_post_url); 
+       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+       curl_setopt($ch, CURLOPT_TIMEOUT, 10); 
+       curl_setopt($ch, CURLOPT_HEADER, true); 
+       //curl_setopt($ch, CURLOPT_HTTPHEADER, Array("Content-Type: text/xml")); 
+       curl_setopt($ch, CURLOPT_POSTFIELDS, $xml_payload); 
+       curl_setopt($ch, CURLOPT_SSLVERSION,3);
+       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+       curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,  2);
+        $result = curl_exec($ch); // echo $result;exit;
+        watchdog('gxbo_post_result', 'result=@result:::::xml=@xml', array('@result' => $result, '@xml' => $xml_payload), WATCHDOG_NOTICE);
+      //echo $result;
+       if ( curl_errno($ch) ) {  $result = 'ERROR -> ' . curl_errno($ch) . ': ' . curl_error($ch).'';
+       } else {
+           $returnCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+           switch($returnCode){
+               case 404:
+                   $result = 'ERROR -> 404 Not Found';
+                   break;
+               default:
+                   break;
+           }
+       }
+       variable_set('webiz_crm_gxbo_last_update',$last_update);
+       echo "\n".$result; 
+       echo "\n".'last updated = '.date("Y-m-d H:i:s",$last_update);
+       curl_close($ch);
+       //exit;
+   }
+   db_query("UPDATE content_type_customer SET field_website_quality_value =  'pass' WHERE field_website_quality_value = 'published'");
+  
+   exit;return; 
+}
+
+function webiz_crm_form_alter(&$form, &$form_state, $form_id) {
+  if($form_id == 'mailer_node_form') {
+      if (module_exists('token')) {
+          $token_help = array(
+            '#title' => t('Replacement patterns'),
+            '#type' => 'fieldset',
+            '#collapsible' => TRUE,
+            '#collapsed' => TRUE,
+            '#description' => t('The following tokens are available to help with this string generation.'),
+            '#value' => theme('token_help', 'node'),
+            );
+          $form['token'] = $token_help;
+        }
+  }
+}
+
+function webiz_crm_api_dotarai_set_domainstatus(){
+  if($_GET['secret']=='d11b14ab963c5d01609c479914a0d9c4') {
+    $domain_status = ($_GET['status'] ? '1' : 'NULL');
+    $nid = db_result(db_query('select nid from content_type_customer where field_customer_custom_domain_value=\'%s\'',$_GET['domain']));
+    if($nid) {
+      $result = db_query('update content_type_customer set field_customer_domain_status_value='.$domain_status.' where field_customer_custom_domain_value=\'%s\'',$_GET['domain']);   
+      echo 'true';
+    }
+    else {
+      echo 'false';
+    }
+  } else { echo 'denied';}
+}
+
+function webiz_crm_api_sms_password($phone,$name,$email,$pwd){//palm
+  // echo $phone.'<br>';
+  // echo $name.'<br>';
+  // echo $email.'<br>';
+  // echo $pwd.'<br>';
+  db_query("INSERT INTO {webiz_sms_data} VALUES ('','%s','%s','%s',%d)",$phone,$name,$email,$pwd);
+}
+
+function webiz_crm_search_sms_password(){//palm
+  $query = "SELECT * FROM {webiz_sms_data} where 1 limit 0,50";
+  $result = db_query($query);
+   while($data = db_fetch_array($result)){
+      $vars[$i] = $data;
+      $i++;
+    }
+  // drupal_get_form('webiz_crm_search_sms_form');
+  return print_r($vars);
+}
+
+function webiz_crm_search_sms_form_submit($form, &$form_state) {
+  //print_r($form_state);
+  $phone = $form_state['values']['phone'];
+  $email = $form_state['values']['email'];
+  
+  if($phone!='' and $email!=''){
+    $query = "SELECT * FROM webiz_sms_data where phone like '%$phone%' and email like '%$email%'";
+  }
+  if($phone!='' and $email==''){
+     $query = "SELECT * FROM webiz_sms_data where phone like '%$phone%'";
+  }
+  if($email!='' and $phone==''){
+     $query = "SELECT * FROM webiz_sms_data where email like '%$email%'";
+  }
+  if($email=='' and $phone==''){
+     $query = "SELECT * FROM webiz_sms_data llmit 0,50";
+  }
+    $result = db_query($query);
+    $i=0;
+    while($data = db_fetch_array($result)){
+      $vars[$i] = $data;
+      $i++;
+    }  
+
+    //$palm = theme_render_template(drupal_get_path('module','webiz_crm').'/themes/search_sms.tpl.php',$vars);
+    // $page = webiz_crm_search_sms_password($data);
+    return $data;
+ 
+}
+
+function webiz_crm_search_sms_password_page($data) {
+  //print_r($data);
+}
+
+function webiz_crm_search_sms_form(){//palm
+  $form['phone'] = array( '#type' => 'textfield', 
+                          '#title' => t('เบอร์โทรศัพท์'),  
+                          '#size' => 20, 
+                          '#maxlength' => 10,
+                        );
+                        
+  $form['email'] = array( '#type' => 'textfield', 
+                          '#title' => t('อีเมล'),  
+                          '#size' => 60, 
+                          '#maxlength' => 128,
+                          );
+                          
+  $form['submit'] = array('#type' => 'submit', '#value' => t('ค้นหา'));
+  
+  return $form;
+}
+
+function webiz_crm_note_call(){
+  $nid = (int) $_REQUEST['nid'];
+  if($nid > 0){
+    $result = db_result(db_query("SELECT field_website_called_value FROM {content_type_customer} WHERE nid=%d",$nid));//echo 'result='.$result;exit;
+    $to = ($result == '') ? 'called' : '';
+    db_query("UPDATE {content_type_customer} SET `field_website_called_value`='%s' WHERE nid=%d",$to,$nid);
+    echo $to;
+  }
+}
+
+function webiz_crm_hunt_quality(){
+  $nid = (int) $_REQUEST['nid'];
+  if($nid > 0){
+    $result = db_result(db_query("SELECT field_website_quality_value FROM {content_type_customer} WHERE nid=%d",$nid));
+    $to = ($result == 'published') ? 'pass' : 'published';
+    db_query("UPDATE {content_type_customer} SET `field_website_quality_value`='%s' WHERE nid=%d",$to,$nid);
+    echo $to;
+  }
+}
+
+function webiz_crm_weekly_report(){
+
+  //oauth
+  $redirect_url = 'https://accounts.google.com/o/oauth2/auth?scope=https://spreadsheets.google.com/feeds/&state=%2Freport&redirect_uri=http://crm.webiz.co.th/weekly_report&response_type=code&client_id=907580084372-kgnj1hs1q1dgb4hu9h6jsqrqi0r21e9k.apps.googleusercontent.com&access_type=offline';
+  $code = $_GET['code'];//code = 4/YuZ7wlNYIie-G7cbCF0_7y_r1S-d
+  $access_token = '';
+  if($code) {
+    $client_id = "907580084372-kgnj1hs1q1dgb4hu9h6jsqrqi0r21e9k.apps.googleusercontent.com";
+    $client_secret = "e8nxSyx4oGWrtW-vBJCOOJ_8";
+
+    $authen_url = "https://accounts.google.com/o/oauth2/token";
+
+    $post_data = "grant_type=authorization_code&code=$code&client_id=$client_id&client_secret=$client_secret&redirect_uri=http://crm.webiz.co.th/weekly_report";echo $post_data;
+
+    $ch = curl_init($authen_url);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS    ,$post_data);
+    //curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/atom+xml'));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $output = curl_exec($ch);
+    curl_close($ch);
+    $array_output = json_decode($output);
+    print_r($array_output);
+    $access_token = $array_output->access_token;
+  } else {
+    drupal_goto($redirect_url);
+  }
+  
+  if($access_token) {
+    db_set_active('webiz');
+    $to_date = mktime(23,59,59) - 24*60*60;
+    $from_date = $to_date+1 - 7*24*60*60;
+    if(1) {
+      $month = 3; $year = 2012;
+      $from_date = mktime(00,00,00,$month,1,$year);
+      $to_date = mktime(00,00,00,($month == 12 ? 1 : $month + 1),1,($month == 12 ? $year+1 : $year))-1;
+    }
+    $date_cell =  date("d M",$from_date) .' - '. date("d M",$to_date) ;
+    //20 Feb - 26 Feb
+
+    $signup_sql = "SELECT count(*) sum FROM `watchdog` WHERE `message` LIKE '%register succesful' AND timestamp >= %d AND timestamp <%d";
+   
+    $signup_cell = db_result(db_query($signup_sql,array($from_date , $to_date) ) ) ;
+
+    $publish_sql = "SELECT  count(DISTINCT uid)  FROM `watchdog` WHERE type = 'domain_status' AND `message` LIKE 'published%' AND timestamp > %d AND timestamp <%d;";
+
+    $publish_cell = db_result(db_query($publish_sql,array($from_date , $to_date) ) ) ;
+
+    $register_publish_in_week_sql = "SELECT  count(DISTINCT u.uid)  FROM users u JOIN  `watchdog` log
+     on (u.uid = log.uid) WHERE
+     log.type = 'domain_status' 
+    AND log.`message` LIKE 'published%' 
+    AND log.timestamp > %d AND log.timestamp <%d 
+    AND u.created > %d AND u.created < %d ;";
+
+    $register_publish_in_week_cell = db_result(db_query($register_publish_in_week_sql,array($from_date , $to_date,$from_date , $to_date) ) ) ;
+
+    $thaipost_sql = "select count(DISTINCT uid) from `watchdog` 
+    WHERE `type` LIKE 'thaipost_status'
+    AND `message` LIKE 'enable%'
+    AND TIMESTAMP >%d
+    AND TIMESTAMP <%d;";
+
+    $thaipost_cell = db_result(db_query($thaipost_sql,array($from_date , $to_date) ) ) ;
+
+    $ecommerce_sql = "SELECT COUNT(DISTINCT uid ) 
+    FROM `watchdog` 
+    WHERE `type` LIKE 'ecommerce_status'
+    AND `message` LIKE 'enable%'
+    AND timestamp >%d
+    AND TIMESTAMP <%d ;";
+
+    $ecommerce_cell = db_result(db_query($ecommerce_sql,array($from_date , $to_date) ) ) ;
+  
+    //post row
+    $url = 'https://spreadsheets.google.com/feeds/list/0Ak5Gok84xpNndFhHMnpIbGx2WFd3VHZTN2JCRzlOTWc/od6/private/full?access_token='.$access_token;
+    $weeknumber = date("W",$from_date);
+
+    $xml_data = '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:gsx="http://schemas.google.com/spreadsheets/2006/extended">'.
+      '<gsx:weeknumber>'.$weeknumber.'</gsx:weeknumber>'.
+      '<gsx:date>'.$date_cell.'</gsx:date>
+      <gsx:signup>'.$signup_cell.'</gsx:signup>'.
+      '<gsx:siteindex></gsx:siteindex>'.
+      '<gsx:publishwebsites>'.$publish_cell.'</gsx:publishwebsites>'.
+      '<gsx:registerandpublishinweek>'.$register_publish_in_week_cell.'</gsx:registerandpublishinweek>'.
+      '<gsx:pvwebserverlog></gsx:pvwebserverlog>'.
+      '<gsx:pvgoogleanalytics></gsx:pvgoogleanalytics>'.
+      '<gsx:thaipostenable>'.$thaipost_cell.'</gsx:thaipostenable>'.
+      '<gsx:paymentenable>'.$ecommerce_cell.'</gsx:paymentenable>'.
+    '</entry>';
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/atom+xml'));
+    curl_setopt($ch, CURLOPT_POSTFIELDS, "$xml_data");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $output = curl_exec($ch);
+    $info = curl_getinfo($ch);
+    curl_close($ch);
+    echo $output;
+    print_r($info);
+
+  }
+  
 }

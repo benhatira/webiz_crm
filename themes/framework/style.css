@@ -571,3 +571,17 @@ div.view div.views-admin-links li a {
 *:first-child + html .clearfix {
   min-height: 1%;
 }
+
+
+/* style for views monitor author by johnny at 7republic */
+
+.view-monitor span.check-status-no { background: #F00; padding: 2px 5px; border-radius: 5px; color: #FFF; }
+.check-status-yes {background: #690; padding: 2px 5px; border-radius: 5px; color: #FFF;}
+
+
+/*  tooltip  */
+
+#info-tooltip { display: none; position: absolute; background: #000;  color: #FFF; padding: 10px; z-index:99;}
+.tooltip { display: none; }
+
+

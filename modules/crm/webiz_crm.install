@@ -29,6 +29,55 @@ function webiz_crm_schema() {
 	  ),
 	  'primary key' => array('uid'),
 	);
+	
+	$schema['webiz_crm_report_register_graph'] = array(
+	  'description' => t("report register graph log"),
+	 	 'fields' => array(
+		    'time' => array(
+		      'description' => t("time"),
+		      'type' => 'int',
+		      'unsigned' => TRUE,
+		      'not null' => TRUE
+		    ),
+		    'count' => array(
+		      'description' => t("count"),
+		      'type' => 'int',
+		      'unsigned' => TRUE,
+		      'not null' => TRUE
+		    ),
+	  ),
+	);
+	
+	$schema['webiz_crm_report_publish_graph'] = array(
+	  'description' => t("report publish graph log"),
+	 	 'fields' => array(
+		    'time' => array(
+		      'description' => t("time"),
+		      'type' => 'int',
+		      'unsigned' => TRUE,
+		      'not null' => TRUE
+		    ),
+		    'publish' => array(
+		      'description' => t("publish"),
+		      'type' => 'int',
+		      'unsigned' => TRUE,
+		      'not null' => TRUE
+		    ),
+		    'unpublish' => array(
+		      'description' => t("unpublish"),
+		      'type' => 'int',
+		      'unsigned' => TRUE,
+		      'not null' => TRUE
+		    ),
+		    'banned' => array(
+		      'description' => t("banned"),
+		      'type' => 'int',
+		      'unsigned' => TRUE,
+		      'not null' => TRUE
+		    ),
+	  ),
+	);
+	
   return $schema;
 }
 function webiz_crm_install() {
@@ -40,16 +89,13 @@ function webiz_crm_uninstall() {
    drupal_uninstall_schema('webiz_crm');
 }
 
-function webiz_crm_update_6101(){
-    drupal_install_schema('webiz_crm');
-}
-
 function webiz_crm_update_6102(){
     db_query('CREATE TABLE webiz_crm_report_register_graph (
              time INT unsigned,
              count INT unsigned
            );');
 }
+
 function webiz_crm_update_6103(){
     db_query('CREATE TABLE webiz_crm_report_publish_graph (
              time INT unsigned,
