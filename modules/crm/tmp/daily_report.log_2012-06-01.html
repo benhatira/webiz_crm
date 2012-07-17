@@ -1,0 +1,40 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>  
+<script type="text/javascript">
+        $(function(){
+                // $('fieldset').find('.content2').css({'display': 'none'});
+                $('legend').click(function(){
+                        $(this).parent().find('.content').slideToggle("slow"); 
+                        // $(this).parent().find('.content2').slideToggle("slow");
+                });
+        });
+</script>
+</head>
+<body>
+<div style='font-size:1.35em;'>
+<fieldset>
+    <legend> ผลการลงทะเบียนวันที่ 1 มิถุนายน 2555  เวลา 15:58:00 น. </legend>
+    <div class="content">
+       <p>จำนวนผู้สมัครหน้าเว็บ ทั้งหมด 66 คน</p>
+       <p>จำนวนผู้ที่ทำการยืนยันสำเร็จ 56 คน</p>
+       <p>ผู้ที่ทำการยืนยันสำเร็จคิดเป็น 84.85 %</p>
+    </div>
+</fieldset>
+<fieldset>
+    <legend>สรุปยอดวันที่ 31 พฤษภาคม 2555 </legend>
+    <div class="content">
+      <p>จำนวนผู้ผู้สมัครหน้าเว็บ ทั้งหมด 112 คน</p>
+      <p>จำนวนผู้ที่ทำการยืนยันสำเร็จ 94 คน</p>
+      <p>ผู้ที่ทำการยืนยันสำเร็จคิดเป็น 83.93 %</p>
+      <hr/>
+      <p>จำนวนผู้ที่ทำการสมัครวันที่ 31 พฤษภาคม 2555 แล้วทำการเผยแพร่เว็บไซต์แล้ว 40 คน </p>
+      <p>คิดเป็น 42.55 % ของผู้ที่ทำการยืนยันสำเร็จ</p>
+      <hr/>
+      <p>Call Center โทรไปทั้งหมด 174 คน</p>
+    </div>
+</fieldset>
+</div>
+</body>
+</html>

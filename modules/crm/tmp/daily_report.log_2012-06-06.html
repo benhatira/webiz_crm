@@ -1,0 +1,211 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>  
+<script type="text/javascript">
+        $(function(){
+                // $('fieldset').find('.content2').css({'display': 'none'});
+                $('legend').click(function(){
+                        $(this).parent().find('.content').slideToggle("slow"); 
+                        // $(this).parent().find('.content2').slideToggle("slow");
+                });
+        });
+</script>
+<style type="text/css">
+  @font-face {
+    font-family: "RSU";
+    src: url(http://crm.webiz.co.th/sites/crm.webiz.co.th/modules/crm/fonts/RSU_Regular.ttf) format("truetype");
+  }
+  body{
+    font-family: "RSU", sans-serif;
+    margin:0;
+  }
+  .header{
+    background-image:url(http://crm.webiz.co.th/sites/crm.webiz.co.th/modules/crm/img/emailHeader.png);
+    background-repeat:no-repeat;
+    width:480;
+    height:86px;
+    margin:auto;
+  }
+  .line1{
+    background-image:url(http://crm.webiz.co.th/sites/crm.webiz.co.th/modules/crm/img/line1.png);
+    background-repeat:repeat-x;
+    width:480;
+    height:1px;
+    margin:auto;
+  }
+  .line2{
+    background-image:url(http://crm.webiz.co.th/sites/crm.webiz.co.th/modules/crm/img/line2.png);
+    background-repeat:repeat-x;
+    width:480;
+    height:1px;
+    margin:auto;
+  }
+  .footer{
+    background-image:url(http://crm.webiz.co.th/sites/crm.webiz.co.th/modules/crm/img/emailFooter.png);
+    background-repeat:no-repeat;
+    width:480;
+    height:53px;
+    margin:auto;
+  }
+  #content{
+    width:480px;
+    margin:auto;
+    font-size:1.25em;
+  }
+  .report{
+    padding-left:88px;
+  }
+  .month-year{
+    text-align:center;
+  }
+  .toolbar{
+    width:480px;
+    clear:both;
+  }
+  .toolbar li {
+    display:block;
+    background-color:#CCCCCC;
+    border:1px solid;
+    border-color:#f3f3f3 #bbb #bbb #f3f3f3;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    margin:0;
+    text-align:center;
+    padding:2px;
+    zoom: 1;
+    float:left;
+    width:55px;
+  }
+  .toolbar .today{
+    display:block;
+    background-color:#2A3576;
+    border:1px solid;
+    border-color:#f3f3f3 #bbb #bbb #f3f3f3;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    margin:0;
+    text-align:center;
+    padding:2px;
+    zoom: 1;
+    float:left;
+    color:#fff;
+    width:55px;
+  }
+  .toolbar .yesterday{
+    display:block;
+    background-color:#999997;
+    border:1px solid;
+    border-color:#f3f3f3 #bbb #bbb #f3f3f3;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    margin:0;
+    text-align:center;
+    padding:2px;
+    zoom: 1;
+    float:left;
+    color:#fff;
+    width:55px;
+  }
+  .date li {
+    display:block;
+    margin:0;
+    text-align:center;
+    float:left;
+    padding:3px;
+    width:55px;
+  }
+  .month-year li {
+    display:block;
+    margin:0;
+    text-align:center;
+    float:left;
+    padding:3px;
+    width:55px;
+    font-size:10px;
+  }
+  .br{
+    height:20px;
+  }
+  .br2{
+     height:100px;
+  }
+  .br3{
+    height:10px;
+  }
+   ul{
+     width:480px;
+     margin-left:-14px;
+   }
+   h3{
+     height:10px;
+   }
+   h2{
+     height:20px;
+   }
+</style>
+</head>
+<body>
+  <div id='content'>
+  <div class='header'>
+  </div>
+<div class='br'></div> 
+  <ul class='date'>
+  <li>อา.</li>
+  <li>จ.</li>
+  <li>อ.</li>
+  <li>พ.</li>
+  <li>พฤ.</li>
+  <li>ศ.</li>
+  <li>ส.</li>
+  </ul>
+  <ul class='toolbar'>
+           <li >03</li>  
+           <li >04</li>  
+           <li  class='yesterday' >05</li>  
+           <li class='today'  >06</li>  
+           <li >07</li>  
+           <li >08</li>  
+           <li >09</li>  
+     </ul>
+  <ul class='month-year'>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li>มิถุนายน 2555</li>
+  <li></li>
+  <li></li>
+  <li></li>
+  </ul>
+<div class='br2'>
+</div>
+   
+<fieldset>
+    <legend> ผลการลงทะเบียนวันที่ 6 มิถุนายน 2555  เวลา 23:59:04 น. </legend>
+    <div class="content">
+       <p>จำนวนผู้สมัครหน้าเว็บ ทั้งหมด 119 คน</p>
+       <p>จำนวนผู้ที่ทำการยืนยันสำเร็จ 105 คน</p>
+       <p>ผู้ที่ทำการยืนยันสำเร็จคิดเป็น 88.24 %</p>
+    </div>
+</fieldset>
+<fieldset>
+    <legend>สรุปยอดวันที่ 5 มิถุนายน 2555 </legend>
+    <div class="content">
+      <p>จำนวนผู้ผู้สมัครหน้าเว็บ ทั้งหมด 121 คน</p>
+      <p>จำนวนผู้ที่ทำการยืนยันสำเร็จ 108 คน</p>
+      <p>ผู้ที่ทำการยืนยันสำเร็จคิดเป็น 89.26 %</p>
+      <hr/>
+      <p>จำนวนผู้ที่ทำการสมัครวันที่ 5 มิถุนายน 2555 แล้วทำการเผยแพร่เว็บไซต์แล้ว 46 คน </p>
+      <p>คิดเป็น 42.59 % ของผู้ที่ทำการยืนยันสำเร็จ</p>
+      <hr/>
+      <p>Call Center โทรไปทั้งหมด 105 คน</p>
+    </div>
+</fieldset>
+<div class='footer'>
+</div>
+</div>
+</body>
+</html>

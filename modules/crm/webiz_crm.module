@@ -2,7 +2,10 @@
 
 include_once('webiz_crm.features.inc');
 include_once('webiz_crm.note.inc');
-
+include_once('webiz_crm.quality_score_api.inc');
+include_once('webiz_crm.email_report.inc');
+include_once('webiz_crm.last_graph_published.inc');
+include_once('webiz_crm.mobile.inc');
 
 function webiz_crm_menu(){
     $items['admin/settings/webiz_crm'] = array(
@@ -69,6 +72,13 @@ function webiz_crm_menu(){
   		'type' => MENU_CALLBACK,
   		'access arguments' => array('view webiz report'),//'administer site configuration'),
     );
+    $items['report/last_graph_published'] = array(
+  		'title' => 'รายงานแสดงการเผยแผ่และสมัครย้อนหลัง',
+  		'description' => t("crm published report"),
+  		'page callback' => 'webiz_crm_last_graph_published',
+  		'type' => MENU_CALLBACK,
+  		'access callback' => TRUE
+  	);// johnny report graph published and register.
     $items['report/csv_export'] = array(
       'title' => 'CSV Export',
       'description' => t('webiz crm test'),
@@ -91,12 +101,20 @@ function webiz_crm_menu(){
   		'type' => MENU_CALLBACK,
   		'access callback' => TRUE,//'administer site configuration'),
     );
+    $items['api/sms_update/%/%'] = array(
+      'title' => 'sms password api',
+      'description' => t('get sms password'),
+      'page callback' => 'webiz_crm_api_sms_update',
+      'page arguments' => array(2,3), 
+  		'type' => MENU_CALLBACK,
+  		'access callback' => TRUE,//'administer site configuration'),
+    );
      $items['search/sms'] = array(
-        'title' => 'search sms password',
+        'title' => 'Search SMS Password',
         'description' => t('search sms password'),
         'page callback' => 'webiz_crm_search_sms_password',
     		'type' => MENU_CALLBACK,
-    		'access callback' => TRUE,//'administer site configuration'),
+    		'access arguments' => array('search sms password'),//'administer site configuration'),
       );
     $items['manage/customer/delete'] = array(
       'title' => 'ลบโดเมนบน Webiz',
@@ -119,13 +137,27 @@ function webiz_crm_menu(){
   		'type' => MENU_CALLBACK,
       'access arguments' => array('view webiz crm info'),//'administer site configuration'),
     );
+    $items['crm_info_score_quality'] = array(
+      'title' => 'crm show info select call type for score_quality',
+      'description' => t('Administer webiz crm show info'),
+      'page callback' => 'webiz_crm_info_score_quality',
+  		'type' => MENU_CALLBACK,
+      'access arguments' => array('view webiz crm info'),//'administer site configuration'),
+    ); // johnny
     $items['update_crm_info'] = array(
       'title' => 'crm update info',
       'description' => t('Administer webiz crm update info'),
       'page callback' => 'webiz_crm_update_info',
   		'type' => MENU_CALLBACK,
-      'access arguments' => array('view webiz crm update info'),//'administer site configuration'),
+      'access arguments' => array('webiz crm update info'),//'administer site configuration'),
     ); 
+    $items['update_comment_add'] = array(
+      'title' => 'crm comment add',
+      'description' => t('crm comment add'),
+      'page callback' => 'webiz_crm_comment_add',
+  		'type' => MENU_CALLBACK,
+      'access arguments' => array('view webiz crm update info'),//'administer site configuration'),
+    );
     $items['weekly_report'] = array(
       'title' => 'crm weekly report',
       'description' => t('weekly report'),
@@ -133,14 +165,225 @@ function webiz_crm_menu(){
   		'type' => MENU_CALLBACK,
       'access arguments' => array('manage webiz data'),//'administer site configuration'),
     );
-    return $items;
+    $items['report/tracking'] = array(
+      'title' => 'crm tracking report',
+      'description' => t('crm tracking report for callcenter'),
+      'page callback' => 'webiz_crm_tracking_report',
+  		'type' => MENU_CALLBACK,
+      'access arguments' => array('view webiz crm update info'),//'administer site configuration'),
+    );
+    $items['report/callcenter_report'] = array(
+      'title' => 'crm callcenter status report',
+      'description' => t('crm callcenter status report for admin'),
+      'page callback' => 'webiz_crm_callcenter_status_report',
+  		'type' => MENU_CALLBACK,
+      'access arguments' => array('view webiz crm update info'),//'administer site configuration'),
+    );
+    $items['report/webiz_daily'] = array(
+      'title' => 'รายงานสรุปยอดลงทะเบียน รายวัน',
+      'description' => t('crm register report for admin'),
+      'page callback' => 'webiz_crm_register_report',
+  		'type' => MENU_CALLBACK,
+      'access arguments' => array('view webiz crm report'),//'administer site configuration'),
+    );
+    $items['api/dotarai_sms_domain'] = array(
+  		'title' => 'sms validate form',
+  		'description' => t("dotarai domain validate"),
+  		'page callback' => 'webiz_crm_dotarai_sms_validate',
+  		'type' => MENU_CALLBACK,
+  		'access callback' => TRUE
+  	);// palm SMS
+  	$items['report/published_report'] = array(
+  		'title' => 'รายงานผู้ทำการเผยแพร่ย้อนหลังรายวัน',
+  		'description' => t("crm published report"),
+  		'page callback' => 'webiz_crm_published_daily_report',
+  		'type' => MENU_CALLBACK,
+  		'access callback' => TRUE
+  	);// palm report published
+  	$items['report/callcenter_log_score_v1'] = array(
+  		'title' => 'crm quality score',
+  		'description' => t("crm quality score"),
+  		'page callback' => 'webiz_crm_callcenter_log_score_v1',
+  		'type' => MENU_CALLBACK,
+  		'access callback' => TRUE
+  	);//  johnny report quality score
+    $items['mobile/case'] = array(
+      'title' => 'Mobile Case',
+      'description' => t("Case Form Webiz Mobile"),
+      'page callback' => 'webiz_crm_mobile_case',
+      'type' => MENU_CALLBACK,
+      'access callback' => TRUE
+    );// koobitor webiz mobile case
+    return $items;   
 }
 
 function webiz_crm_perm(){
-  return array('set quality status','view webiz report','export webiz csv','set call status');
+  return array('set quality status','view webiz report','export webiz csv','set call status','search sms password','view webiz crm info','view webiz crm tooltip','webiz crm update info','view webiz crm update info','view webiz crm report');
 }
 
+// function webiz_crm_mail($key, &$message, $params) {
+//     $message['subject'] = $params['subject'];
+//     $message['body'] = $params['body'];
+//     
+//     $headers = array(
+//         'MIME-Version' => '1.0',
+//         'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
+//         'Content-Transfer-Encoding' => '8Bit',
+//         'X-Mailer' => 'Drupal',
+//         //'From' => 'ธุรกิจไทย GO ONLINE<gtbo@webiz.co.th>'
+//       );
+//     
+//     foreach ($headers as $key => $value) {
+//         $message['headers'][$key] = $value;
+//       }
+// }
 
+function webiz_crm_callcenter_status_report(){
+  $vars = array();
+  $result = theme_render_template(drupal_get_path('module','webiz_crm').'/themes/callcenter_status.tpl.php',$vars);
+  return $result;
+  exit;
+}
+
+function webiz_crm_tracking_report(){ // johnny tracking feat. palm
+  global $user;
+  $vars = array();
+  $vars['nid'] = $nid;
+  drupal_add_js(drupal_get_path('module','webiz_crm') .'/js/script.js');
+  $result = theme_render_template(drupal_get_path('module','webiz_crm').'/themes/tracking.tpl.php',$vars);
+  return $result;
+  exit;
+}
+
+// function webiz_crm_thaidate($strDate){
+//  $strYear = date("Y",strtotime($strDate))+543;
+//  $strMonth= date("n",strtotime($strDate));
+//  $strDay= date("j",strtotime($strDate));
+//  $strDayName= date("D",strtotime($strDate));
+//  $strMonthCut = array("","มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม");
+//  $strDayCut = array("","อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์");
+//  $strMonthThai=$strMonthCut[$strMonth];
+//  $strDayThai=$strDayCut[$strDayName];
+//  return "$strDayThai $strDay $strMonthThai $strYear";
+// }
+
+function webiz_crm_thaidate($format,$date = 0){
+  global $thaidate;
+  if(!$thaidate['month']){
+    $thatdate = array(
+      'month' => array(
+        'full' => array('มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'),
+        'short' => array('ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.')
+      ),
+      'day' => array(
+        'full' => array('Sun'=>'อาทิตย์', 'Mon'=>'จันทร์', 'Tue'=>'อังคาร', 'Wed'=>'พุธ', 'Thu'=>'พฤหัสบดี', 'Fri'=>'ศุกร์', 'Sat'=>'เสาร์'),
+        'short' => array('Sun'=>'อา.', 'Mon'=>'จ.', 'Tue'=>'อ.', 'Wed'=>'พ.','Thu'=>'พฤ.', 'Fri'=>'ศ.','Sat'=>'ส.')
+      )
+    );
+  }
+  
+ $format = ($date == 0) ? str_replace('D',$thatdate['day']['short'][date('D')],$format) : str_replace('D',$thatdate['day']['short'][date('D',$date)],$format);
+  $format = ($date == 0) ? str_replace('l',$thatdate['day']['full'][date('D')],$format) : str_replace('l',$thatdate['day']['full'][date('D',$date)],$format);
+  $format = ($date == 0) ? str_replace('Y',date('Y')+543,$format) : str_replace('Y',date('Y',$date)+543,$format);
+  $format = ($date == 0) ? str_replace('y',substr(date('Y')+543,2),$format) : str_replace('y',substr(date('Y',$date)+543,2),$format);
+  $format = ($date == 0) ? str_replace('F',$thatdate['month']['full'][date('n')-1],$format) : str_replace('F',$thatdate['month']['full'][date('n',$date)-1],$format);
+  $format = ($date == 0) ? str_replace('M',$thatdate['month']['short'][date('n')-1],$format) : str_replace('D',$thatdate['month']['short'][date('n',$date)-1],$format);
+  
+  return ($date == 0) ? date($format) : date($format,$date);
+}
+
+function webiz_crm_dotarai_sms_validate($phone=0,$domain=0){
+  include('class/logfile.class.php');
+  $log = new Logging();
+  $msisdn = $phone;
+  $timestamp = strtotime("now");
+  
+  if(eregi("^08[0-9]{8}",$msisdn)) {
+    $domain = $domain;    
+    $username = "0834325576";
+    $password = "915058";    
+    $message = "ชื่อโดเมน ".$domain." ได้รับการจดทะเบียนกับทาง Dotarai เรียบร้อยแล้วครับ";
+    $sender = 'Webiz'; 
+    $SMStype = 'premium';
+    $timestamp = strtotime("now");
+    $message2 = str_replace(" ", "%20", $message);
+    
+    $url = "http://www.thaibulksms.com/sms_api.php";
+    $data_string = "username=$username&password=$password&msisdn=$msisdn&message=$message2&sender=$sender&ScheduledDelivery=$ScheduledDelivery&force=$SMStype";
+                 
+    $agent = "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_USERAGENT, $agent);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
+    $result_xml = curl_exec ($ch);
+    curl_close ($ch);
+    
+    $xmlObj = simplexml_load_string($result_xml); // สร้างเป็น xml object 
+    $arrXml = objectsIntoArray($xmlObj); // แปลงค่า xml object เป็นตัวแปร array ใน php
+    //   
+    //   //print_r($arrXml);
+    if($arrXml['QUEUE']!=''){
+       $status = $arrXml['QUEUE']['Status'];
+       $transaction = $arrXml['QUEUE']['Transaction'];
+    }else{
+       $status = $arrXml['Status'];
+    }
+      $log->lfile('sites/crm.webiz.co.th/modules/crm/tmp/dotarai_sms.log');
+      $log->lwrite(','.$msisdn.','.$status.','.$message);
+      $log->lclose();
+    // echo "pass,".$status.", ".transaction; //callBack
+    }else{
+      $log->lwrite($msisdn.' เบอร์โทรศัพท์ไม่ถูกต้อง');
+      $log->lclose();
+      // echo 'notpass,เบอร์โทรศัพท์ไม่ถูกต้อง';exit;
+    }
+}
+
+function objectsIntoArray($arrObjData, $arrSkipIndices = array()) //palm
+{
+    $arrData = array();
+    
+    // if input is object, convert into array
+    if (is_object($arrObjData)) {
+        $arrObjData = get_object_vars($arrObjData);
+    }
+    
+    if (is_array($arrObjData)) {
+        foreach ($arrObjData as $index => $value) {
+            if (is_object($value) || is_array($value)) {
+                $value = objectsIntoArray($value, $arrSkipIndices); // recursive call
+            }
+            if (in_array($index, $arrSkipIndices)) {
+                continue;
+            }
+            $arrData[$index] = $value;
+        }
+    }
+    return $arrData;
+}
+
+function webiz_crm_published_daily_report(){
+  
+}
+
+function webiz_crm_comment_add(){
+  global $user;
+  $subject = $_REQUEST['subject'];
+  $comment = $_REQUEST['comment'];
+  $nid = $_REQUEST['nid'];
+  if($_REQUEST['comment'] != ''){
+    db_set_active('webiz_crm_cc');
+    $sql="INSERT INTO {comments} (uid,nid,subject,comment,timestamp) VALUES ('%d','%s','%s','%s','%s') ";
+    $result = db_query($sql,$user->uid,$nid,$subject,$comment,time());
+    echo 'yes';
+    db_set_active('default');
+  }else{
+    echo 'no';
+  }
+}
 function webiz_crm_update_info(){
    
    global $db_url;
@@ -151,14 +394,17 @@ function webiz_crm_update_info(){
   $status = $_REQUEST['status'];
   $status_desc = $_REQUEST['status_desc'];
   $recall_date = $_REQUEST['recall_date'];
+  $recall_date = strtotime($recall_date);
+  $recall_time = $_REQUEST['recall_time'];
   $node = node_load($nid);
-  
+  $domain = $node->field_customer_custom_domain[0]['value'];
   if($_REQUEST['mode']=='level') {
-  $node->field_customer_status_level[0]['value'] = $status;
-  $node->field_customer_status_des[0]['value'] = $status_desc;
-  $node->field_customer_recall_datetime[0]['value'] = $recall_date;
+    $node->field_customer_status_level[0]['value'] = $status;
+    $node->field_customer_status_des[0]['value'] = $status_desc;
+    $node->field_customer_recall_datetime[]['value'] = $recall_date;
+    $node->field_customer_recall_time[]['value'] = $recall_time;
   }else if($_REQUEST['mode']=='check'){
-  $node->field_customer_status_check[0]['value'] = 'pass';  
+    $node->field_customer_status_check[0]['value'] = 'pass';  
   }
   node_save($node);
   
@@ -172,8 +418,8 @@ function webiz_crm_update_info(){
   
   /* Switch Database */
   db_set_active('webiz_crm_cc'); 
-  $sql="INSERT INTO {watchdog_callcenter} (uid,type,message,location,hostname,timestamp) VALUES ('%d','%s','%s','%s','%s','%s') ";
-  $result = db_query($sql,$user->uid,'callcenter',$msg,'',$ip,time());
+  $sql="INSERT INTO {watchdog_callcenter} (nid,uid,type,message,location,hostname,timestamp) VALUES ('%d','%d','%s','%s','%s','%s','%s') ";
+  $result = db_query($sql,$nid,$user->uid,'callcenter',$msg,$domain,$ip,time());
   db_set_active('default');
   /* End Switch Database */
   
@@ -182,22 +428,32 @@ function webiz_crm_update_info(){
      echo 'yes';
   }
   
-  print_r($node);
+  //print_r($node);
 }
 
 
 function webiz_crm_info(){
-  
+  // johnny crm info
   $data = array(
       1 => "ช่วยทำ web จนเสร็จ",
       2 => "ยังไม่มีธุรกิจ",
       3 => "ลองศึกษาข้อมูลดูก่อน",
-      4 => "ยังไม่ว่าง / ติดต่อกลับมาเอง",
-      5 => "ไม่มีเวลาทำ และไม่ต้องการให้ช่วย",
-      6 => "แจ้งว่าไม่รู้เรื่อง",
-      7 => "เบอร์ติดต่อไม่ได้ (ไม่มีหมายเลขที่เรียก)",
-      8 => "ขอยกเลิกบริการ"
+      4 => "ไม่รับสาย",
+      5 => "สายไม่ว่าง",
+      6 => "ยังไม่ว่าง",
+      7 => "ติดต่อกลับมาหา callcenter เอง",
+      8 => "ไม่มีเวลาทำ",
+      9 => "ไม่ต้องการให้ช่วย",
+      10 => "แจ้งว่าไม่รู้เรื่อง",
+      11 => "เบอร์ติดต่อไม่ได้ (ไม่มีหมายเลขที่เรียก)",
+      12 => "ขอยกเลิกบริการ",
+      13 => "เว็บไซต์ทำเสร็จแล้ว",
+      14 => "เว็บไซต์ทำเสร็จบางส่วน",
+      15 => "แจ้งเปลี่ยน domain",
+      16 => "เว็บผิดกฎ",
+      17 => "ลบเว็บ"    
   );
+  
   variable_set('status_description',$data);
   
   drupal_add_js(drupal_get_path('theme','framework') .'/js/datepicker.js');
@@ -645,7 +901,7 @@ function webiz_crm_report_callcenter_graph(){
 }
 
 function webiz_crm_gtbo_excel_export(){
-  $sql = "SELECT 
+/*  $sql = "SELECT 
     ctc.field_customer_custom_domain_value as domain,
     ctc.field_customer_webiz_domain_value as webiz_domain,
     ctc.field_customer_active_domain_value as active_domain,
@@ -668,13 +924,71 @@ function webiz_crm_gtbo_excel_export(){
   WHERE field_customer_site_status_value = 1;";
   $strFileName = "gtbo/gtbo".date('Y-m-d').".csv";
   $fhandle = fopen($strFileName, 'w');
-  $header =  '"โดเมน","webiz โดเมน","Active Domain","ชื่อ - นามสกุล","เบอร์โทรศัพท์","อีเมล","ชื่อบริษัท","หมวดหมู่ธุรกิจ","สถานะโดเมน","เลขที่","แขวง","เขต","จังหวัด","รหัสไปรษณีย์","latitude","longitude","วันที่สมัคร"' ."\n";
+  $header =  '"โดเมน","webiz โดเมน","Active Domain","ชื่อ - นามสกุล","เบอร์โทรศัพท์","อีเมล","ชื่อบริษัท","หมวดหมู่ธุรกิจ","สถานะโดเมน","เลขที่","แขวง","เขต","จังหวัด","รหัสไปรษณีย์","latitude","longitude","วันที่สมัคร"' ."\n";*/
+  $strFileName = "gtbo/gtbo".date('Y-m-d').".csv";
+  $fhandle = fopen($strFileName, 'w');
+  $header =  '"partner-reference","sign-up-date","given-name","family-name"'.
+  ',"email","phone-number","language","temporary-url","temporary-url-being-used","temporary-url-publish-date"'.
+  ',"final-url","final-url-being-used","final-url-publish-date","searchable","business-name","business-description","market-segments"'.
+  '"address-line-1","city","post-code","latitude","longitude","opt-in-email","opt-in-post","opt-in-places","account-deleted"' ."\n";
   fwrite($fhandle, $header);
+   $nid_result = db_query("SELECT n.nid FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
+   WHERE ctc.field_website_quality_value IS NOT NULL ORDER BY n.changed ");//200,100);// and ctc.field_customer_site_status_value = 0
+//     $nid_result = db_query("SELECT n.nid FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
+//     WHERE ctc.field_website_quality_value IS NOT NULL LIMIT %d,%d;",$start,$per_round);//200,100);//test
+   // create XML payload
+     
+   while($row =  db_fetch_array($nid_result)) {
+     $node = node_load($row['nid'], NULL, TRUE);
+     $sql = "SELECT gxbo.*  FROM {webiz_crm_gxbo_xml_data as gxbo} WHERE gxbo.uid = %d";
+     $name_and_desc = db_fetch_array(db_query($sql,$node->field_customer_webiz_id[0]['value']));
+     $owner_name = $name_and_desc['owner_name'];
+     if($owner_name == '') $owner_name = $node->field_customer_admin_name[0]['value'];
+     $bizdescription = $name_and_desc['bizdescription'];
+      $record = '';
+      $record .= '"'. $node->field_customer_partner_ref[0]['value'] .'"';
+      $record .= ',"'.date($date_format,$node->field_customer_signup_date[0]['value']).'"';
+      $owner_name = explode (' ',$owner_name);
+      $record .= ',"'.webiz_crm_urlencode($owner_name[0]).'"';
+      $record .= ',"'.webiz_crm_urlencode($owner_name[1]).'"';
+      $record .= ',"'.$node->field_customer_email[0]['value'].'"';
+      $record .= ',"'.$node->field_customer_phone[0]['value'].'"';
+      $record .= ',"th"';
+
+      $record .= ',"http://'.$node->field_customer_webiz_domain[0]['value'].'"';
+      $record .= ',"'. ($node->field_customer_site_status[0]['value'] == 1 ? 'True' : 'False').'"';
+      $record .= ',"'. date($date_format, $node->field_customer_signup_date[0]['value']). '"';
+
+      $record .= ',"http://'.$node->field_customer_custom_domain[0]['value'].'"';
+      $record .= ',"'. ($node->field_customer_domain_status[0]['value'] ? 'True' : 'False').'"';
+      $record .= ',"'. date($date_format, $node->changed ).'"';
+      $record .= ',"True"';
+      $record .= ',"'. $node->title.'"';
+      $record .= ',"'. $bizdescription .'"';
+      $market_segment = explode(' - ',$node->field_customer_bizcat[0]['value']);
+      $record .= ',"'. '<segment>'.$market_segment[0].'</segment>'. 
+                       ($market_segment[1] ? '<segment>'.$market_segment[1].'</segment>' :'') .'"';
+      $address_line1 = $node->field_customer_address[0]['value'] .' ' . $node->field_customer_subdistrict[0]['value'] .' '. $node->field_customer_district[0]['value'];
+      $record .= ',"'. $address_line1 .'"';
+      $record .= ',"'. $node->field_customer_province[0]['value'].'"';
+      $record .= ',"'. $node->field_customer_zipcode[0]['value'].'"';
+      $record .= ',"'. $node->field_customer_latitude[0]['value'].'"';
+      $record .= ',"'. $node->field_customer_longitude[0]['value'].'"';
+
+
+      $record .= ',"'. ($node->field_customer_optin_gmail[0]['value'] ? 'True' : '').'"';
+      $record .= ',"'. ($node->field_customer_optin_gmail[0]['value'] ? 'True' : '').'"';
+      $record .= ',"'. ($node->field_customer_optin_gplace[0]['value'] ? 'True' : '').'"';
+      $record .= ',"False"' ."\n";
+      fwrite($fhandle, $record);
+    }
+/*  fwrite($fhandle, $header);
   $result = db_query($sql);
   while($row = db_fetch_array($result)){
     $record =  '"'.$row['domain'].'","'.$row['webiz_domain'].'","'.$row['active_domain'].'","'.$row['admin'].'","'.$row['phone'].'","'.$row['email'].'","'.$row['bizname'].'","'.$row['bizcat'].'","'.$row['domain_status'].'","'.$row['address'].'","'.$row['subdistrict'].'","'.$row['district'].'","'.$row['province'].'","'.$row['zipcode'].'","'.$row['latitude'].'","'.$row['longitude'].'","'.date('Y-m-d H:i:s',$row['signup']).'"' ."\n";
     fwrite($fhandle, $record);
   }
+  fclose($fhandle);*/
   fclose($fhandle);
   exit;
 }
@@ -789,7 +1103,26 @@ function webiz_crm_job_queue_functions() {
 function webiz_crm_mail($key, &$message, $params) {
   $message['subject'] = $params['subject'];
   $message['body'][] = $params['body'];
-//  $message['headers'] = array_merge($message['headers'], $params['headers']);
+  $headers = array(
+           'MIME-Version' => '1.0',
+           'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
+           'Content-Transfer-Encoding' => '8Bit',
+           'X-Mailer' => 'Drupal',
+           //'From' => 'ธุรกิจไทย GO ONLINE<gtbo@webiz.co.th>'
+           );
+         
+  foreach ($headers as $key => $value) {
+    $message['headers'][$key] = $value;
+  }
+}
+
+function webiz_crm_mail_alter(&$message){
+  $default_from = variable_get('site_mail', ini_get('sendmail_from'));
+  
+  if($message['from'] == $default_from){
+    $message['from'] = '"GTBO DAILY REPORT" <'. $default_from .'>';
+    $message['headers']['From'] = $message['headers']['Sender'] = $message['headers']['Return-Path'] = $message['headers']['Errors-To'] = $message['headers']['Reply-To'] = $message['from'];
+  }
 }
 
 function webiz_crm_mailer_cron(){
@@ -832,6 +1165,7 @@ function webiz_crm_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {global $user;
     switch ($op) {
       case 'view': //echo '<!--<pre>';print_r($node);echo '</pre>-->';
       if($_GET['domain']) {
+        // echo '<!--<pre>';print_r($node);echo '</pre>-->';
         $node->field_customer_domain_status[0]['value'] = $_GET['domain'];
         $node->content['field_customer_domain_status']['field']['items'][0]['#item']['value'] = $_GET['domain'];
           
@@ -844,6 +1178,9 @@ function webiz_crm_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {global $user;
           $params = array('body' => $body,'subject' => $subject);
           $description = 'mail('.$mailer->title.') to '. $to;
           watchdog('mailer_watch',$description);
+          $phone = $node->field_customer_phone[0]['value'];
+          $domain = $node->field_customer_custom_domain[0]['value'];
+          webiz_crm_dotarai_sms_validate($phone,$domain);
           //job_queue_add('drupal_mail', $description, array('webiz_crm', 'mail', $to, $language, $params, $from, TRUE) , '', TRUE);
         node_save($node);
       }
@@ -871,7 +1208,7 @@ function webiz_crm_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {global $user;
          node_save($node);
       } 
          
-      //echo "<pre>";print_r($node);echo "</pre>";
+      //echo "<!--pre>";print_r($node);echo "</pre-->";
       $set_block_status = '<input type="button" onclick="location.href=\'?block=1\';" value="บล็อกเว็บผิดกฎ" />
                         <input type="button" onclick="location.href=\'?block=2\';" value="ปลดบล็อก" />';
       $set_domain_status = '<input type="button" onclick="location.href=\'?domain=1\';" value="จดทะเบียนแล้ว" />';//จดทะเบียนแล้ว</a>';
@@ -994,23 +1331,29 @@ function webiz_crm_publish_csv(){
 
 function webiz_crm_xml_repost(){
    $xml_post_url = "https://gxbo-thailand-hr.appspot.com/submit_xml";
+   //$xml_post_url = "https://gxbo-test-xml.appspot.com/submit_xml";//test
    //$post_status = 'published'; // just set status here
    
-   $last_update = 0;//variable_get('webiz_crm_gxbo_last_update',0);
+   $old_last_update = variable_get('webiz_crm_gxbo_last_update',0);
+   $last_update = $old_last_update;
    echo 'last updated = '.date("Y-m-d H:i:s",$last_update);
    $date_format = "Ymd\THis\Z";
    //$xml_post_url = "http://webiz.co.th/sites/crm.webiz.co.th/modules/crm/post.php";
    $secret_key = "90c6a0f677fc4fc7bff9c87cb325eb30";
+   //$secret_key = "c8cd79fcf2b849f18f311e3d08aa6575";//test
    $customer_count =  db_result(db_query("SELECT count(*) FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid)
-    WHERE ctc.field_website_quality_value IS NOT NULL and n.changed > %d ;",$last_update)); //and ctc.field_website_quality_value = 'published'
+    WHERE ctc.field_website_quality_value IS NOT NULL  and n.changed > %d ;",$old_last_update)); //and ctc.field_website_quality_value = 'published'// and ctc.field_customer_site_status_value = 0
    $per_round = 100;//echo $customer_count;exit;
-   $loop = $customer_count/$per_round +1;echo $loop. 'pages left';//exit;
+   $loop = $customer_count/$per_round ;echo $loop. 'pages left';//exit;
    $begin = 0;
    $reach = $loop;
+   //$reach = ;
    for($i= $begin;$i < $reach;$i++) {
        $start = $i*100;
        $nid_result = db_query("SELECT n.nid FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
-       WHERE ctc.field_website_quality_value IS NOT NULL and n.changed > %d  ORDER BY n.changed ASC LIMIT %d,%d;",$last_update,$start,$per_round);//200,100);
+       WHERE ctc.field_website_quality_value IS NOT NULL and n.changed > %d  ORDER BY n.changed ASC LIMIT %d,%d;",$old_last_update,$start,$per_round);//200,100);// and ctc.field_customer_site_status_value = 0
+  //     $nid_result = db_query("SELECT n.nid FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
+  //     WHERE ctc.field_website_quality_value IS NOT NULL LIMIT %d,%d;",$start,$per_round);//200,100);//test
        // create XML payload
        $xml_payload = 'businesses=<?xml version="1.0" encoding="UTF-8"?><businesses secret-key="'.$secret_key.'">';
          
@@ -1058,11 +1401,11 @@ function webiz_crm_xml_repost(){
                          '<language>th</language>';
                          
          $xml_payload .= '<temporary-url><![CDATA[http://'.webiz_crm_urlencode($node->field_customer_webiz_domain[0]['value']).']]></temporary-url>'.
-                         '<temporary-url-being-used>True</temporary-url-being-used>'.
+                         '<temporary-url-being-used>'.($node->field_customer_site_status[0]['value'] == 1 ? 'True' : 'False').'</temporary-url-being-used>'.
                          '<temporary-url-publish-date>'.date($date_format, $node->field_customer_signup_date[0]['value']).'</temporary-url-publish-date>'.
                                         
                          '<final-url><![CDATA[http://'.webiz_crm_urlencode($node->field_customer_custom_domain[0]['value']).']]></final-url>'.
-                         '<final-url-being-used>'.($node->field_customer_domain_status[0]['value'] ? 'True' : '').'</final-url-being-used>'.
+                         '<final-url-being-used>'.($node->field_customer_domain_status[0]['value'] ? 'True' : 'False').'</final-url-being-used>'.
                          '<final-url-publish-date>'.date($date_format, $node->changed ).'</final-url-publish-date>'.
                          '<searchable>True</searchable>';
          $xml_payload .= '<business-name><![CDATA['.truncate_utf8(webiz_crm_urlencode($node->title),60,true,true).']]></business-name>'.
@@ -1087,9 +1430,14 @@ function webiz_crm_xml_repost(){
                          '<opt-in-post>'.($node->field_customer_optin_gmail[0]['value'] ? 'True' : '').'</opt-in-post>'.
                          '<opt-in-places>'.($node->field_customer_optin_gplace[0]['value'] ? 'True' : '').'</opt-in-places>';
          $xml_payload .= '<signup-channel></signup-channel>';
-         $xml_payload .= '<account-deleted>False</account-deleted></business>';
+         $xml_payload .= '<account-deleted>False</account-deleted>';
+         $xml_payload .= '<spain-cif>1234</spain-cif>'.
+                         '<spain-nif>12345</spain-nif>'.
+                         '<spain-web-created>1</spain-web-created>'.
+                         '<spain-acquisition-channel></spain-acquisition-channel>';
+         $xml_payload .= '</business>';              
          //TODO : update $last_update
-         if($node->changed > $last_update ) $last_update = $node->changed;
+         if($node->changed > $last_update ) $last_update = $node->changed; 
        }             
        $xml_payload .= '</businesses>';
        echo "\n".'<br><br>'.$i .' page,';
@@ -1159,75 +1507,50 @@ function webiz_crm_api_dotarai_set_domainstatus(){
   } else { echo 'denied';}
 }
 
-function webiz_crm_api_sms_password($phone,$name,$email,$pwd){//palm
-  // echo $phone.'<br>';
-  // echo $name.'<br>';
-  // echo $email.'<br>';
-  // echo $pwd.'<br>';
-  db_query("INSERT INTO {webiz_sms_data} VALUES ('','%s','%s','%s',%d)",$phone,$name,$email,$pwd);
+function webiz_crm_api_sms_password($phone,$name,$email,$pwd,$domain){//palm
+  $timestamp = strtotime("now");
+  db_query("INSERT INTO {webiz_sms_data} VALUES ('','%s','%s','%s','%s',%d,'%s',%d)",$phone,$domain,$name,$email,$pwd,$timestamp,0);
+}
+
+function webiz_crm_api_sms_update($phone,$pwd){//palm
+  db_query("UPDATE {webiz_sms_data} SET status = %d WHERE `phone` = '%s' and `sms_pwd` = %d",1,$phone,$pwd);
 }
 
 function webiz_crm_search_sms_password(){//palm
-  $query = "SELECT * FROM {webiz_sms_data} where 1 limit 0,50";
-  $result = db_query($query);
-   while($data = db_fetch_array($result)){
-      $vars[$i] = $data;
-      $i++;
+  $phone = $_POST['phone'];
+  $email = $_POST['email'];
+
+    if($phone!='' and $email!=''){
+      $query = "SELECT * FROM {webiz_sms_data} where phone like '%$phone%' and email like '%$email%' limit 0,20";
+      $check = true;
     }
-  // drupal_get_form('webiz_crm_search_sms_form');
-  return print_r($vars);
-}
-
-function webiz_crm_search_sms_form_submit($form, &$form_state) {
-  //print_r($form_state);
-  $phone = $form_state['values']['phone'];
-  $email = $form_state['values']['email'];
-  
-  if($phone!='' and $email!=''){
-    $query = "SELECT * FROM webiz_sms_data where phone like '%$phone%' and email like '%$email%'";
-  }
-  if($phone!='' and $email==''){
-     $query = "SELECT * FROM webiz_sms_data where phone like '%$phone%'";
-  }
-  if($email!='' and $phone==''){
-     $query = "SELECT * FROM webiz_sms_data where email like '%$email%'";
-  }
-  if($email=='' and $phone==''){
-     $query = "SELECT * FROM webiz_sms_data llmit 0,50";
-  }
-    $result = db_query($query);
-    $i=0;
-    while($data = db_fetch_array($result)){
-      $vars[$i] = $data;
-      $i++;
-    }  
-
-    //$palm = theme_render_template(drupal_get_path('module','webiz_crm').'/themes/search_sms.tpl.php',$vars);
-    // $page = webiz_crm_search_sms_password($data);
-    return $data;
- 
-}
-
-function webiz_crm_search_sms_password_page($data) {
-  //print_r($data);
-}
-
-function webiz_crm_search_sms_form(){//palm
-  $form['phone'] = array( '#type' => 'textfield', 
-                          '#title' => t('เบอร์โทรศัพท์'),  
-                          '#size' => 20, 
-                          '#maxlength' => 10,
-                        );
-                        
-  $form['email'] = array( '#type' => 'textfield', 
-                          '#title' => t('อีเมล'),  
-                          '#size' => 60, 
-                          '#maxlength' => 128,
-                          );
-                          
-  $form['submit'] = array('#type' => 'submit', '#value' => t('ค้นหา'));
-  
-  return $form;
+    else if($phone!='' and $email==''){
+      $query = "SELECT * FROM {webiz_sms_data} where phone like '%$phone%' limit 0,20";
+      $check = true;
+    }
+    else if($email!='' and $phone==''){
+      $query = "SELECT * FROM {webiz_sms_data} where email like '%$email%' limit 0,20";
+      $check = true; 
+    }
+    else{
+      $check = false;
+    }
+      if($check==true){
+        $result = db_query($query);
+        $i=0;
+        while($data = db_fetch_array($result)){
+          $vars[$i] = $data;
+          $i++;
+        }
+      }
+      else{
+        $vars = 'nodata';
+      }
+      // print_r($vars);
+      $data = array('search'=>$vars);
+      drupal_add_js(drupal_get_path('module','webiz_crm') .'/js/script.js');
+      $result = theme_render_template(drupal_get_path('module','webiz_crm').'/themes/search_sms.tpl.php',$data);
+      return $result;
 }
 
 function webiz_crm_note_call(){

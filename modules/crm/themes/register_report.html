@@ -1,0 +1,91 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>  
+<script type="text/javascript">
+        $(function(){
+                // $('fieldset').find('.content2').css({'display': 'none'});
+                $('legend').click(function(){
+                        $(this).parent().find('.content').slideToggle("slow"); 
+                        // $(this).parent().find('.content2').slideToggle("slow");
+                });
+        });
+</script>
+<style type="text/css">
+  @font-face {
+    font-family: "Kimberley";
+    src: url(http://www.princexml.com/fonts/larabie/kimberle.ttf) format("truetype");
+  }
+  body{
+    font-family: "Kimberley", sans-serif;
+  }
+  .month-year{
+    text-align:center;
+  }
+  .date .toolbar{
+  /*  width:20%;*/
+    margin:auto;
+  }
+  .date .toolbar li {
+    display:inline;
+    background-color:#eee;
+    border:1px solid;
+    border-color:#f3f3f3 #bbb #bbb #f3f3f3;
+    margin:0;
+/*    padding:.5em;*/
+    zoom: 1;
+  }
+  .br{
+    height:20px;
+  }
+</style>
+</head>
+<body>
+  <?php
+    $array_dateTH = explode(' ',  $today['date']); 
+    $array_dateEN = explode(' ',  $today['dateEN']);
+    // echo $today['dateEN']; 
+  ?>
+<div style='font-size:1.35em;'>
+<div class='date'>
+  <ul class='toolbar'>
+  <li>1</li>
+  <li>2</li>
+  <li>3</li>
+  <li>4</li>
+  <li>5</li>
+  <li>6</li>
+  <li>7</li>
+  </ul>
+</div>
+<div class='br'>
+</div>  
+<!-- <div class='month-year'>
+  <?php 
+        echo $array_dateTH[1].' '.$array_dateTH[2];
+  ?>
+</div>  -->   
+<fieldset>
+    <legend> ผลการลงทะเบียนวันที่ <?php echo $today['date'].'  เวลา '.date('H:i:s').' น.';?> </legend>
+    <div class="content">
+       <p>จำนวนผู้สมัครหน้าเว็บ ทั้งหมด <?php echo $result1=$today['sms_all']; ?> คน</p>
+       <p>จำนวนผู้ที่ทำการยืนยันสำเร็จ <?php echo $result2=$today['sms_reg']; ?> คน</p>
+       <p>ผู้ที่ทำการยืนยันสำเร็จคิดเป็น <?php if($result1!=0){ echo round($result2*100/$result1,2);} else{ echo '0';}?> %</p>
+    </div>
+</fieldset>
+<fieldset>
+    <legend>สรุปยอดวันที่ <?php echo $yesterday['date'];?> </legend>
+    <div class="content">
+      <p>จำนวนผู้ผู้สมัครหน้าเว็บ ทั้งหมด <?php echo $result3=$yesterday['sms_all']; ?> คน</p>
+      <p>จำนวนผู้ที่ทำการยืนยันสำเร็จ <?php echo $result4=$yesterday['sms_reg']; ?> คน</p>
+      <p>ผู้ที่ทำการยืนยันสำเร็จคิดเป็น <?php echo round($result4*100/$result3,2);?> %</p>
+      <hr/>
+      <p>จำนวนผู้ที่ทำการสมัครวันที่ <?php echo $yesterday['date'];?> แล้วทำการเผยแพร่เว็บไซต์แล้ว <?php echo $result5=$yesterday['published']; ?> คน </p>
+      <p>คิดเป็น <?php echo round($result5*100/$result4,2);?> % ของผู้ที่ทำการยืนยันสำเร็จ</p>
+      <hr/>
+      <p>Call Center โทรไปทั้งหมด <?php echo $yesterday['call'];?> คน</p>
+    </div>
+</fieldset>
+</div>
+</body>
+</html>

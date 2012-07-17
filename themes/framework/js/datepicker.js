@@ -3,7 +3,7 @@ $(document).ready(function(){
   var month = (myDate.getMonth()+1).toString();
   if (month.length == 1) month = "0" + month;
   var today = myDate.getFullYear() + '-' + month + '-' + myDate.getDate() ;
-  $("#edit-field-customer-signup-date-value-min-date").val(today);
+  //$("#edit-field-customer-signup-date-value-min-date").val(today);
   
   
   $("#edit-field-customer-signup-date-value-min-date").datepicker({

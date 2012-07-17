@@ -573,10 +573,16 @@ div.view div.views-admin-links li a {
 }
 
 
-/* style for views monitor author by johnny at 7republic */
+/* style for views monitor author by johnny at webiz */
 
 .view-monitor span.check-status-no { background: #F00; padding: 2px 5px; border-radius: 5px; color: #FFF; }
 .check-status-yes {background: #690; padding: 2px 5px; border-radius: 5px; color: #FFF;}
+
+
+/* style for views call score performance author by johnny at webiz */
+
+.page-call-performance span.check-status-no { background: #F00; padding: 2px 5px; border-radius: 5px; color: #FFF; }
+.page-call-performance .check-status-yes {background: #690; padding: 2px 5px; border-radius: 5px; color: #FFF;}
 
 
 /*  tooltip  */
@@ -584,4 +590,37 @@ div.view div.views-admin-links li a {
 #info-tooltip { display: none; position: absolute; background: #000;  color: #FFF; padding: 10px; z-index:99;}
 .tooltip { display: none; }
 
+/* css notification message on  crm Info by johnny */
 
+.info, .success, .warning, .error, .validation {
+  border: 1px solid;
+  margin: 10px 0px;
+  padding:15px 10px 15px 50px;
+  background-repeat: no-repeat;
+  background-position: 10px center;
+}
+.info {
+  color: #00529B;
+  background-color: #BDE5F8;
+  background-image: url('images/info.png');
+}
+.success {
+  color: #4F8A10;
+  background-color: #DFF2BF;
+  background-image:url('images/success.png');
+}
+.error {
+  color: #D8000C;
+  background-color: #FFBABA;
+  background-image: url('images/error.png');
+}
+
+/*style for callcenter report status by johnny */
+body.page-report table.table-form-callcenter th,
+body.page-report table.table-form-callcenter td { border: 0px; }
+body.page-report table.table-callcenter-status-report th,
+body.page-report table.table-callcenter-status-report td { border: 1px solid black;width:500px; }
+
+
+/*  style for callcenter log by johnny */
+body.page-call-performance .views-exposed-widgets {display:none;}

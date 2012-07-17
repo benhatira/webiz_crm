@@ -10,9 +10,9 @@ $(function(){
     		locateX+=10;
     		locateY-=180;
     		
-    		var nid = $(this).find('#nid').text();
+    		var nid = $(this).find('.nid').text();
     		//console.log(nid);
-       
+        
     		var path = 'crm_tooltip';
     		var location = window.location.href.split('/');
     		location = "http://"+location[2]+"/"+path;
@@ -25,7 +25,7 @@ $(function(){
             data: { 'nid': nid },
         		success: function(response) {
         		  
-        		    console.log(response);
+        		    //console.log(response);
                 var name = $('<div>').addClass('name').text('ชื่อ-สกุล่: '+response.name).appendTo('#info-tooltip');
                 var biztype = $('<div>').addClass('biztype').text('ประเภท: '+response.biztype).appendTo('#info-tooltip');
                 var bizcat = $('<div>').addClass('biztype').text('หมวดหมู่: '+response.bizcat).appendTo('#info-tooltip');

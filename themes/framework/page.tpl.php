@@ -13,7 +13,9 @@
   <script type="text/javascript" src="<?php echo $base_url.'/'.path_to_theme();?>/js/thickbox.js"></script>
   <script type="text/javascript" src="<?php echo $base_url.'/'.path_to_theme();?>/js/tooltip.js"></script>
   <script type="text/javascript" src="<?php echo $base_url.'/'.path_to_theme();?>/js/datepicker.js"></script>
+  <script type="text/javascript" src="<?php echo $base_url.'/'.path_to_theme();?>/js/fancybox/jquery.fancybox-1.3.1.js"></script>
   <link type="text/css" href="<?php echo $base_url.'/'.path_to_theme();?>/css/thickbox.css" rel="stylesheet">
+  <link type="text/css" href="<?php echo $base_url.'/'.path_to_theme();?>/js/fancybox/jquery.fancybox-1.3.1.css" rel="stylesheet">
  
   <!--[if lt IE 9]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -25,7 +27,6 @@
   <div id="wrapper" class="clearfix">
 
 <span id="info-tooltip"></span>
-
 
     <div id="skip-link">
       <a href="#main-content" class="element-invisible element-focusable"><?php print t('Skip to main content'); ?></a>
