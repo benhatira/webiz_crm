@@ -44,6 +44,7 @@ function api_score(){
           $connect_database = mysql_select_db("webiz_production", $connect_server) or die ('Not Connect Database '.DATABASE);
           if($ver == 'v1')getScoreV1Webiz($uid);
           if($ver == 'v2')getScoreV2Webiz($uid);
+          if($ver == 'v21')getScoreV21Webiz($uid);
         }else{
           $connect_database = mysql_select_db("webiz_crm", $connect_server) or die ('Not Connect Database '.DATABASE);
           $result = mysql_query("SELECT field_customer_webiz_id_value FROM content_type_customer WHERE field_customer_webiz_domain_value = '$user' LIMIT 0,1");
@@ -53,6 +54,7 @@ function api_score(){
           $connect_database = mysql_select_db("webiz_production", $connect_server) or die ('Not Connect Database '.DATABASE);
           if($ver == 'v1')getScoreV1Webiz($uid);
           if($ver == 'v2')getScoreV2Webiz($uid);
+          if($ver == 'v21')getScoreV21Webiz($uid);
         }
       }else{
         $connect_database = mysql_select_db("webiz_crm", $connect_server) or die ('Not Connect Database '.DATABASE);
@@ -63,10 +65,12 @@ function api_score(){
         $connect_database = mysql_select_db("webiz_production", $connect_server) or die ('Not Connect Database '.DATABASE);
         if($ver == 'v1')getScoreV1Webiz($uid);
         if($ver == 'v2')getScoreV2Webiz($uid);
+        if($ver == 'v21')getScoreV21Webiz($uid);
       }
     }else{
       if($ver == 'v1')getScoreV1User($user);
-      if($ver == 'v2')getScoreV1User($user);
+      if($ver == 'v2')getScoreV2User($user);
+      if($ver == 'v21')getScoreV21User($user);
     }
   }
 }
@@ -983,6 +987,670 @@ function getScoreV2Webiz($user){
 }
 
 /*
-v3
+v21
 - title => 's site - 20
 */
+
+function getScoreV21User($user){
+  $bg_main = array("6112");
+  $bg_main_ok = array("25954","44662","45937","46191","142986","143157");
+  $logo_main = array("6113");
+  $title_web_main = array("new content");
+  $fid_main = array("1","18356","468307","742889","796421","796424","796427","796432","796433","796443","825555","879608","1183541");
+  
+  $true['score'] = 0;
+  $true['public'] = 0;
+  $true['title']['plus'] = 0;
+  $true['title']['minus'] = 0;
+  $true['body']['plus'] = 0;
+  $true['body']['minus'] = 0;
+  $true['bg']['plus'] = 0;
+  $true['bg']['minus'] = 0;
+  $true['logo']['plus'] = 0;
+  $true['logo']['minus'] = 0;
+  $true['domain']['plus'] = 0;
+  $true['domain']['minus'] = 0;
+  $true['analytics']['plus'] = 0;
+  $true['analytics']['minus'] = 0;
+  $true['tutorial']['plus'] = 0;
+  $true['tutorial']['minus'] = 0;
+  $true['page']['plus'] = 0;
+  $true['page']['show'] = 0;
+  $true['page']['all'] = 0;
+  $true['page']['body']['plus'] = 0;
+  $true['page']['body']['minus'] = 0;
+  $true['page']['body']['total'] = 0;
+  $true['product']['plus'] = 0;
+  $true['product']['show'] = 0;
+  $true['product']['all'] = 0;
+  $true['product']['body']['plus'] = 0;
+  $true['product']['body']['minus'] = 0;
+  $true['product']['body']['total'] = 0;
+  $true['product_item']['plus'] = 0;
+  $true['product_item']['show'] = 0;
+  $true['product_item']['all'] = 0;
+  $true['product_item']['body']['plus'] = 0;
+  $true['product_item']['body']['minus'] = 0;
+  $true['product_item']['body']['total'] = 0;
+  $true['photo']['plus'] = 0;
+  $true['photo']['minus'] = 0;
+  $true['photo']['show'] = 0;
+  $true['photo']['all'] = 0;
+
+  // get uid from username
+  $data['username'] = $user;
+  $result = mysql_query("SELECT uid FROM users WHERE name = '$user' LIMIT 0,1");
+  while($row = mysql_fetch_array($result)){
+    $uid = $row['uid'];
+  }
+
+  $select_site = mysql_query("SELECT nid, uid, title, status FROM node WHERE type = 'site' AND uid = $uid");
+  while($row = mysql_fetch_array($select_site)){
+    $data['score'] = 0;
+    $data['uid'] = $row['uid'];
+    $data['nid'] = $row['nid'];
+    $data['public'] = $row['status'];
+    $data['title'] = $row['title'];
+    if($data['public'] == 1){
+      $data['score'] += 2;
+      $true['public'] += 2;
+    }
+    if(!preg_match("/^This is/", $data['title']) && !preg_match("/'s site$/", $data['title'])){ 
+      $data['score'] += 5;
+      $true['title']['plus'] += 5;
+    }else{
+      $data['score'] -= 5;
+      $true['title']['minus'] -= 5;
+    }
+
+
+    // คำอธิบายเว็บไซต์ subheadline
+    $result_body = mysql_query("SELECT body FROM node_revisions WHERE nid = $data[nid] LIMIT 0,1");
+    while($row_body = mysql_fetch_array($result_body)){
+      $data['body'] = $row_body['body'];
+      if(!preg_match("/^พิมพ์รายละเอียด/", $data['body']) && !preg_match("/^This is/", $data['body'])){
+        $data['score'] += 5;
+        $true['body']['plus'] += 5;
+      }else{
+        $data['score'] -= 10;
+        $true['body']['minus'] -= 20;
+      }
+    }
+
+    $site = mysql_query("SELECT * FROM content_type_site WHERE nid = $data[nid] LIMIT 0,1");
+    while($row = mysql_fetch_array($site)){
+      $data['domain'] = $row['field_site_domain_value'];
+      $setting = unserialize($row['field_site_setting_value']);
+      $ecommerce_email = unserialize($row['field_site_ecommerce_email_value']);
+
+      // ความสวยงาม 5 point
+      $data['bg'] = (string)$row['field_site_background_image_fid'];
+      $data['logo'] = $row['field_site_logo_image_fid'];
+      if(!in_array($data['bg'],$bg_main)){ 
+        $data['score'] += 5;
+        $true['bg']['plus'] += 5;
+      }else{
+        $data['score'] -= 5;
+        $true['bg']['minus'] += 5;
+      }
+      if(in_array($data['bg'],$bg_main_ok)){ 
+        $data['score'] += 5;
+        $true['bg']['plus'] += 5;
+      }
+      if(!in_array($data['logo'],$logo_main)){
+        $data['score'] += 5;
+        $true['logo']['plus'] += 5;
+      }
+
+      // E-Commerce 5 point
+      $data['kbank'] = $row['field_site_kbank_id_value'];
+      $data['thaipost'] = $row['field_site_thaipost_enable_value'];
+      $data['ecommerce'] = $row['field_site_ecommerce_enable_value'];
+      $data['ecommerce_email'] = $ecommerce_email['paysbuy-data']['username'];
+      // if($data['kbank'] != '') $data['score'] += 5;
+      if($data['thaipost'] == 1){
+        $data['score'] += 2;
+        $true['thaipost']['plus'] += 2;
+      }
+      if($data['ecommerce'] == 1){
+        $data['score'] += 2;
+
+      }
+      if($data['ecommerce_email'] != ''){
+        $data['score'] += 5;
+        $true['ecommerce']['plus'] += 2;
+      }
+
+      // ความน่าเชื่อถือ 5 point
+      // $data['active_domain'] = $row['field_site_active_domain_value'];
+      $data['dbd'] = $row['field_site_dbd_number_value']; 
+      $data['dbd_name'] = $row['field_site_dbd_name_value'];
+      if(gethostbyname($data['domain'])=="27.254.42.75"){
+        $data['score'] += 15;
+        $true['domain']['plus'] += 15;
+      }
+      // if($data['active_domain'] != '') $data['score'] += 5;
+      if($data['dbd_name'] != ''){
+        $data['score'] += 2;
+        $true['dbd_name']['plus'] += 2;
+      }
+      if(preg_match("/^[0-9]{13}/", $data['dbd'])){
+        $data['score'] += 5;
+        $true['dbd']['plus'] += 5;
+      }
+
+      // ติดตามการใช้งาน 2 point
+      $data['analytics'] = $row['field_site_google_analytics_value'];
+      $data['webmaster'] = $row['field_site_webmaster_tools_value']; 
+      $data['tutorial'] = $setting['tutorial']['disable'];
+      if(preg_match("/^UA-[0-9]{8}-[0-9]/", $data['analytics'])){
+        $data['score'] += 2;
+        $true['analytics']['plus'] += 2;
+      }
+      if(strlen($data['webmaster']) == 43){
+        $data['score'] += 2;
+        $true['webmaster']['plus'] += 2;
+      }
+      if(isset($data['tutorial'])){
+        $data['score'] += 1;
+        $true['tutorial']['plus'] += 1;
+      }
+
+      // Webpage
+      $webpage = mysql_query("SELECT nid, title, status FROM node WHERE type = 'webpage' AND uid = $data[uid]");
+      $data['page']['all'] = 0;
+      $data['page']['show'] = 0;
+      $main = '';
+      while($row_webpage = mysql_fetch_array($webpage)){
+        if($row_webpage['status'] == 1){
+
+          // หน้า webpage 2 point
+          $data['page'][$data[page][show]]['title'] = strtolower($row_webpage['title']);
+          if(!in_array($title_web,$title_web_main)){ 
+            $data['score'] += 1;
+            $true['page']['plus'] += 1;
+          }
+
+          // Page Details
+          $data['page'][$data[page][show]]['nid'] = $row_webpage['nid'];
+          $body_page = mysql_query("SELECT body FROM node_revisions WHERE nid = $row_webpage[nid] LIMIT 0,1");
+          while($row_body_page = mysql_fetch_array($body_page)){
+            $data['page'][$data[page][show]]['body'] = $row_body_page['body'];
+            if(!preg_match("/^พิมพ์รายละเอียด/", $row_body_page['body']) && $row_body_page['body'] != ''){
+              if($main == ''){
+                $main = $row_body_page['body'];
+                $data['score'] += 2;
+                $true['page']['body']['plus'] += 2;
+              }
+              if($main == $row_body_page['body']){
+                $data['score'] -= 5;
+                $true['page']['body']['minus'] -= 5;
+                $true['page']['body']['total']++;
+              }
+              if($main != $row_body_page['body']){
+                $data['score'] += 2;
+                $true['page']['body']['plus'] += 2;
+              }
+            }else{
+              $data['score'] -= 5;
+              $true['page']['body']['minus'] -= 5;
+              $true['page']['body']['total']++;
+            }
+          } // end pade details
+          $data['page']['show']++;
+          $true['page']['show']++;
+        }// end status 1
+        $data['page']['all']++;
+        $true['page']['all']++;
+      }// end webpage
+
+      // Product
+      $product = mysql_query("SELECT nid, type, title, status FROM node WHERE type = 'product' AND uid = $data[uid]");
+      $data['product']['all'] = 0;
+      $data['product']['show'] = 0;
+      $main = '';
+      while($row_product = mysql_fetch_array($product)){
+        if($row_product['status'] == 1){
+          // หน้า product 2 point
+          $data['product'][$data[product][show]]['title'] = strtolower($row_product['title']);
+          if(!preg_match("/^สินค้าที่/", $row_product['title']) && $row_product['title'] != 'new product' && !preg_match("/^product/", $row_product['title'])){
+            $data['score'] += 1;
+            $true['product']['plus'] += 1;
+          }else{
+            $data['score'] -= 1;
+            $true['product']['minus'] -= 1;
+          }
+
+          // Product Details
+          $data['product'][$data[product][show]]['nid'] = $row_product['nid'];
+          $result_product = mysql_query("SELECT body FROM node_revisions WHERE nid = $row_product[nid] LIMIT 0,1");
+          while($row_product = mysql_fetch_array($result_product)){
+            $data['product'][$data[product][show]]['body'] = $row_product['body'];
+            if(!preg_match("/^พิมพ์รายละเอียด/", $row_product['body']) && !preg_match("/^This is/", $row_product['body'])  && $row_product['body'] != ''){
+              if($main == ''){
+                $main = $row_product['body'];
+                $data['score'] += 2;
+                $true['product']['body']['plus'] += 2;
+              }
+              if($main == $row_product['body']){
+                $data['score'] -= 5;
+                $true['product']['body']['minus'] -= 5;
+                $true['product']['body']['total']++;
+              }
+              if($main != $row_product['body']){
+                $data['score'] += 2;
+                $true['product']['body']['plus'] += 2;
+              }
+            }else{
+              $data['score'] -= 5;
+              $true['product']['body']['minus'] -= 5;
+              $true['product']['body']['total']++;
+            }
+            $data['product']['show']++;
+            $true['product']['show']++;
+          } // end Product Details
+        }
+        $data['product']['all']++;
+        $true['product']['all']++;
+      } // end product
+
+      // Product_item
+      $product_item = mysql_query("SELECT nid, type, title, status FROM node WHERE type = 'product_item' AND uid = $data[uid]");
+      $data['product_item']['all'] = 0;
+      $data['product_item']['show'] = 0;
+      while($row_product_item = mysql_fetch_array($product_item)){
+        if($row_product_item['status'] == 1){
+          // หน้า product_item 2 point
+          $data['product_item'][$data[product_item][show]]['title'] = strtolower($row_product_item['title']);
+          if($row_product_item['title'] != 'new product' && !preg_match("/^product/", $row_product_item['title'])){
+            $data['score'] += 1;
+            $true['product_item']['plus'] += 1;
+          }else{
+            $data['score'] -= 1;
+            $true['product_item']['minus'] -= 1;
+          }
+
+          // Product_item Details
+          $data['product_item'][$data[product_item][show]]['nid'] = $row_product_item['nid'];
+          $result_product_item = mysql_query("SELECT body FROM node_revisions WHERE nid = $row_product_item[nid] LIMIT 0,1");
+          while($row_product_item = mysql_fetch_array($result_product_item)){
+            $data['product_item'][$data[product_item][show]]['body'] = $row_product_item['body'];
+            if(!preg_match("/^พิมพ์รายละเอียด/", $row_product_item['body']) && !preg_match("/^This is/", $row_product_item['body'])  && $row_product_item['body'] != '' && !preg_match("/^ใส่รายละเอียด/", $row_product_item['body'])){
+              if($main == ''){
+                $main = $row_product_item['body'];
+                $data['score'] += 2;
+                $true['product_item']['body']['plus'] += 2;
+              }
+              if($main == $row_product_item['body']){
+                $data['score'] -= 5;
+                $true['product_item']['body']['minus'] -= 5;
+                $true['product_item']['body']['total']++;
+              }
+              if($main != $row_product_item['body']){
+                $data['score'] += 2;
+                $true['product_item']['body']['plus'] += 2;
+              }
+            }else{
+              $data['score'] -= 5;
+              $true['product_item']['body']['minus'] -= 5;
+              $true['product_item']['body']['total']++;
+            }
+          }// end Product_item Details
+          $data['product_item']['show']++;
+          $true['product_item']['show']++;
+        }
+        $data['product_item']['all']++;
+        $true['product_item']['all']++;
+      } // emd product_item
+
+      // Photo
+      $data['photo']['all'] = 0;
+      $result = mysql_query("SELECT * FROM content_field_site_photo WHERE nid = $data[nid]");
+      while($row = mysql_fetch_array($result)){
+        $data['photo'][$data[photo][all]]['fid'] = $row['field_site_photo_fid'];
+        if(!in_array($fid,$fid_main)){
+          $data['score'] += 1;
+          $true['photo']['plus'] += 1;
+        }
+        $data['photo']['all']++;
+        $true['photo']['all']++;
+      }//end photo
+      
+    }// end site
+    
+    /*echo '<h2>User => '.$name.' <br/> Score => '.$data['score'].'</h2>';
+    printall($data);*/
+    
+    echo $data['score'];
+    
+  }
+}
+
+function getScoreV21Webiz($user){
+  $bg_main = array("6112");
+  $bg_main_ok = array("25954","44662","45937","46191","142986","143157");
+  $logo_main = array("6113");
+  $title_web_main = array("new content");
+  $fid_main = array("1","18356","468307","742889","796421","796424","796427","796432","796433","796443","825555","879608","1183541");
+  
+  $true['score'] = 0;
+  $true['public'] = 0;
+  $true['title']['plus'] = 0;
+  $true['title']['minus'] = 0;
+  $true['body']['plus'] = 0;
+  $true['body']['minus'] = 0;
+  $true['bg']['plus'] = 0;
+  $true['bg']['minus'] = 0;
+  $true['logo']['plus'] = 0;
+  $true['logo']['minus'] = 0;
+  $true['domain']['plus'] = 0;
+  $true['domain']['minus'] = 0;
+  $true['analytics']['plus'] = 0;
+  $true['analytics']['minus'] = 0;
+  $true['tutorial']['plus'] = 0;
+  $true['tutorial']['minus'] = 0;
+  $true['page']['plus'] = 0;
+  $true['page']['show'] = 0;
+  $true['page']['all'] = 0;
+  $true['page']['body']['plus'] = 0;
+  $true['page']['body']['minus'] = 0;
+  $true['page']['body']['total'] = 0;
+  $true['product']['plus'] = 0;
+  $true['product']['show'] = 0;
+  $true['product']['all'] = 0;
+  $true['product']['body']['plus'] = 0;
+  $true['product']['body']['minus'] = 0;
+  $true['product']['body']['total'] = 0;
+  $true['product_item']['plus'] = 0;
+  $true['product_item']['show'] = 0;
+  $true['product_item']['all'] = 0;
+  $true['product_item']['body']['plus'] = 0;
+  $true['product_item']['body']['minus'] = 0;
+  $true['product_item']['body']['total'] = 0;
+  $true['photo']['plus'] = 0;
+  $true['photo']['minus'] = 0;
+  $true['photo']['show'] = 0;
+  $true['photo']['all'] = 0;
+
+  $uid = $user;
+  $select_site = mysql_query("SELECT nid, uid, title, status FROM node WHERE type = 'site' AND uid = $uid");
+  while($row = mysql_fetch_array($select_site)){
+    $data['score'] = 0;
+    $data['uid'] = $row['uid'];
+    $data['nid'] = $row['nid'];
+    $data['public'] = $row['status'];
+    $data['title'] = $row['title'];
+    if($data['public'] == 1){
+      $data['score'] += 2;
+      $true['public'] += 2;
+    }
+    if(!preg_match("/^This is/", $data['title']) && !preg_match("/'s site$/", $data['title'])){ 
+      $data['score'] += 5;
+      $true['title']['plus'] += 5;
+    }else{
+      $data['score'] -= 5;
+      $true['title']['minus'] -= 5;
+    }
+
+
+    // คำอธิบายเว็บไซต์ subheadline
+    $result_body = mysql_query("SELECT body FROM node_revisions WHERE nid = $data[nid] LIMIT 0,1");
+    while($row_body = mysql_fetch_array($result_body)){
+      $data['body'] = $row_body['body'];
+      if(!preg_match("/^พิมพ์รายละเอียด/", $data['body']) && !preg_match("/^This is/", $data['body'])){
+        $data['score'] += 5;
+        $true['body']['plus'] += 5;
+      }else{
+        $data['score'] -= 10;
+        $true['body']['minus'] -= 20;
+      }
+    }
+
+    $site = mysql_query("SELECT * FROM content_type_site WHERE nid = $data[nid] LIMIT 0,1");
+    while($row = mysql_fetch_array($site)){
+      $data['domain'] = $row['field_site_domain_value'];
+      $setting = unserialize($row['field_site_setting_value']);
+      $ecommerce_email = unserialize($row['field_site_ecommerce_email_value']);
+
+      // ความสวยงาม 5 point
+      $data['bg'] = (string)$row['field_site_background_image_fid'];
+      $data['logo'] = $row['field_site_logo_image_fid'];
+      if(!in_array($data['bg'],$bg_main)){ 
+        $data['score'] += 5;
+        $true['bg']['plus'] += 5;
+      }else{
+        $data['score'] -= 5;
+        $true['bg']['minus'] += 5;
+      }
+      if(in_array($data['bg'],$bg_main_ok)){ 
+        $data['score'] += 5;
+        $true['bg']['plus'] += 5;
+      }
+      if(!in_array($data['logo'],$logo_main)){
+        $data['score'] += 5;
+        $true['logo']['plus'] += 5;
+      }
+
+      // E-Commerce 5 point
+      $data['kbank'] = $row['field_site_kbank_id_value'];
+      $data['thaipost'] = $row['field_site_thaipost_enable_value'];
+      $data['ecommerce'] = $row['field_site_ecommerce_enable_value'];
+      $data['ecommerce_email'] = $ecommerce_email['paysbuy-data']['username'];
+      // if($data['kbank'] != '') $data['score'] += 5;
+      if($data['thaipost'] == 1){
+        $data['score'] += 2;
+        $true['thaipost']['plus'] += 2;
+      }
+      if($data['ecommerce'] == 1){
+        $data['score'] += 2;
+
+      }
+      if($data['ecommerce_email'] != ''){
+        $data['score'] += 5;
+        $true['ecommerce']['plus'] += 2;
+      }
+
+      // ความน่าเชื่อถือ 5 point
+      // $data['active_domain'] = $row['field_site_active_domain_value'];
+      $data['dbd'] = $row['field_site_dbd_number_value']; 
+      $data['dbd_name'] = $row['field_site_dbd_name_value'];
+      if(gethostbyname($data['domain'])=="27.254.42.75"){
+        $data['score'] += 15;
+        $true['domain']['plus'] += 15;
+      }
+      // if($data['active_domain'] != '') $data['score'] += 5;
+      if($data['dbd_name'] != ''){
+        $data['score'] += 2;
+        $true['dbd_name']['plus'] += 2;
+      }
+      if(preg_match("/^[0-9]{13}/", $data['dbd'])){
+        $data['score'] += 5;
+        $true['dbd']['plus'] += 5;
+      }
+
+      // ติดตามการใช้งาน 2 point
+      $data['analytics'] = $row['field_site_google_analytics_value'];
+      $data['webmaster'] = $row['field_site_webmaster_tools_value']; 
+      $data['tutorial'] = $setting['tutorial']['disable'];
+      if(preg_match("/^UA-[0-9]{8}-[0-9]/", $data['analytics'])){
+        $data['score'] += 2;
+        $true['analytics']['plus'] += 2;
+      }
+      if(strlen($data['webmaster']) == 43){
+        $data['score'] += 2;
+        $true['webmaster']['plus'] += 2;
+      }
+      if(isset($data['tutorial'])){
+        $data['score'] += 1;
+        $true['tutorial']['plus'] += 1;
+      }
+
+      // Webpage
+      $webpage = mysql_query("SELECT nid, title, status FROM node WHERE type = 'webpage' AND uid = $data[uid]");
+      $data['page']['all'] = 0;
+      $data['page']['show'] = 0;
+      $main = '';
+      while($row_webpage = mysql_fetch_array($webpage)){
+        if($row_webpage['status'] == 1){
+
+          // หน้า webpage 2 point
+          $data['page'][$data[page][show]]['title'] = strtolower($row_webpage['title']);
+          if(!in_array($title_web,$title_web_main)){ 
+            $data['score'] += 1;
+            $true['page']['plus'] += 1;
+          }
+
+          // Page Details
+          $data['page'][$data[page][show]]['nid'] = $row_webpage['nid'];
+          $body_page = mysql_query("SELECT body FROM node_revisions WHERE nid = $row_webpage[nid] LIMIT 0,1");
+          while($row_body_page = mysql_fetch_array($body_page)){
+            $data['page'][$data[page][show]]['body'] = $row_body_page['body'];
+            if(!preg_match("/^พิมพ์รายละเอียด/", $row_body_page['body']) && $row_body_page['body'] != ''){
+              if($main == ''){
+                $main = $row_body_page['body'];
+                $data['score'] += 2;
+                $true['page']['body']['plus'] += 2;
+              }
+              if($main == $row_body_page['body']){
+                $data['score'] -= 5;
+                $true['page']['body']['minus'] -= 5;
+                $true['page']['body']['total']++;
+              }
+              if($main != $row_body_page['body']){
+                $data['score'] += 2;
+                $true['page']['body']['plus'] += 2;
+              }
+            }else{
+              $data['score'] -= 5;
+              $true['page']['body']['minus'] -= 5;
+              $true['page']['body']['total']++;
+            }
+          } // end pade details
+          $data['page']['show']++;
+          $true['page']['show']++;
+        }// end status 1
+        $data['page']['all']++;
+        $true['page']['all']++;
+      }// end webpage
+
+      // Product
+      $product = mysql_query("SELECT nid, type, title, status FROM node WHERE type = 'product' AND uid = $data[uid]");
+      $data['product']['all'] = 0;
+      $data['product']['show'] = 0;
+      $main = '';
+      while($row_product = mysql_fetch_array($product)){
+        if($row_product['status'] == 1){
+          // หน้า product 2 point
+          $data['product'][$data[product][show]]['title'] = strtolower($row_product['title']);
+          if(!preg_match("/^สินค้าที่/", $row_product['title']) && $row_product['title'] != 'new product' && !preg_match("/^product/", $row_product['title'])){
+            $data['score'] += 1;
+            $true['product']['plus'] += 1;
+          }else{
+            $data['score'] -= 1;
+            $true['product']['minus'] -= 1;
+          }
+
+          // Product Details
+          $data['product'][$data[product][show]]['nid'] = $row_product['nid'];
+          $result_product = mysql_query("SELECT body FROM node_revisions WHERE nid = $row_product[nid] LIMIT 0,1");
+          while($row_product = mysql_fetch_array($result_product)){
+            $data['product'][$data[product][show]]['body'] = $row_product['body'];
+            if(!preg_match("/^พิมพ์รายละเอียด/", $row_product['body']) && !preg_match("/^This is/", $row_product['body'])  && $row_product['body'] != ''){
+              if($main == ''){
+                $main = $row_product['body'];
+                $data['score'] += 2;
+                $true['product']['body']['plus'] += 2;
+              }
+              if($main == $row_product['body']){
+                $data['score'] -= 5;
+                $true['product']['body']['minus'] -= 5;
+                $true['product']['body']['total']++;
+              }
+              if($main != $row_product['body']){
+                $data['score'] += 2;
+                $true['product']['body']['plus'] += 2;
+              }
+            }else{
+              $data['score'] -= 5;
+              $true['product']['body']['minus'] -= 5;
+              $true['product']['body']['total']++;
+            }
+            $data['product']['show']++;
+            $true['product']['show']++;
+          } // end Product Details
+        }
+        $data['product']['all']++;
+        $true['product']['all']++;
+      } // end product
+
+      // Product_item
+      $product_item = mysql_query("SELECT nid, type, title, status FROM node WHERE type = 'product_item' AND uid = $data[uid]");
+      $data['product_item']['all'] = 0;
+      $data['product_item']['show'] = 0;
+      while($row_product_item = mysql_fetch_array($product_item)){
+        if($row_product_item['status'] == 1){
+          // หน้า product_item 2 point
+          $data['product_item'][$data[product_item][show]]['title'] = strtolower($row_product_item['title']);
+          if($row_product_item['title'] != 'new product' && !preg_match("/^product/", $row_product_item['title'])){
+            $data['score'] += 1;
+            $true['product_item']['plus'] += 1;
+          }else{
+            $data['score'] -= 1;
+            $true['product_item']['minus'] -= 1;
+          }
+
+          // Product_item Details
+          $data['product_item'][$data[product_item][show]]['nid'] = $row_product_item['nid'];
+          $result_product_item = mysql_query("SELECT body FROM node_revisions WHERE nid = $row_product_item[nid] LIMIT 0,1");
+          while($row_product_item = mysql_fetch_array($result_product_item)){
+            $data['product_item'][$data[product_item][show]]['body'] = $row_product_item['body'];
+            if(!preg_match("/^พิมพ์รายละเอียด/", $row_product_item['body']) && !preg_match("/^This is/", $row_product_item['body'])  && $row_product_item['body'] != '' && !preg_match("/^ใส่รายละเอียด/", $row_product_item['body'])){
+              if($main == ''){
+                $main = $row_product_item['body'];
+                $data['score'] += 2;
+                $true['product_item']['body']['plus'] += 2;
+              }
+              if($main == $row_product_item['body']){
+                $data['score'] -= 5;
+                $true['product_item']['body']['minus'] -= 5;
+                $true['product_item']['body']['total']++;
+              }
+              if($main != $row_product_item['body']){
+                $data['score'] += 2;
+                $true['product_item']['body']['plus'] += 2;
+              }
+            }else{
+              $data['score'] -= 5;
+              $true['product_item']['body']['minus'] -= 5;
+              $true['product_item']['body']['total']++;
+            }
+          }// end Product_item Details
+          $data['product_item']['show']++;
+          $true['product_item']['show']++;
+        }
+        $data['product_item']['all']++;
+        $true['product_item']['all']++;
+      } // emd product_item
+
+      // Photo
+      $data['photo']['all'] = 0;
+      $result = mysql_query("SELECT * FROM content_field_site_photo WHERE nid = $data[nid]");
+      while($row = mysql_fetch_array($result)){
+        $data['photo'][$data[photo][all]]['fid'] = $row['field_site_photo_fid'];
+        if(!in_array($fid,$fid_main)){
+          $data['score'] += 1;
+          $true['photo']['plus'] += 1;
+        }
+        $data['photo']['all']++;
+        $true['photo']['all']++;
+      }//end photo
+      
+    }// end site
+    
+    /*echo '<h2>User => '.$name.' <br/> Score => '.$data['score'].'</h2>';
+    printall($data);*/
+    
+    echo $data['score'];
+    
+  }
+}

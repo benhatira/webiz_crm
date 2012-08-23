@@ -63,5 +63,18 @@ while($row = db_fetch_array($result)) {
   $i++;
 }
 
+
+/*echo "<table>";
+$sql = "SELECT customer.*, watchdog.* FROM {webiz_crm_cc.watchdog_log_score_quality} watchdog LEFT JOIN {webiz_crm.content_type_customer} customer ON watchdog.nid = customer.nid WHERE `timestamp` BETWEEN UNIX_TIMESTAMP(  '2012-07-30 00:00:00' ) 
+ AND UNIX_TIMESTAMP(  '2012-07-30 23:59:59' )";
+$result = db_query($sql);
+while($row = db_fetch_array($result)) {
+  echo "<tr>";
+  echo "<td>".$row['before']."<td>";
+  echo "<td>".$row['after']."<td>";
+  echo "<td>".$row['field_customer_webiz_domain_value']."<td>";
+  echo "</tr>";
+}*/
+
 ?>
 </table>

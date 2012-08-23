@@ -60,5 +60,9 @@ $(".apply_score").click(function() {
         return $data;
       }
       
+      
+      
+      
+      
     ?>
 </center>

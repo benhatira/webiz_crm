@@ -178,6 +178,19 @@ $chart = array(
 } // end if else
 
 db_set_active('default');
+
+/*echo "<table>";
+$sql = "SELECT customer.*, watchdog.* FROM webiz_crm.content_type_customer customer left join webiz_crm_cc.watchdog_callcenter watchdog on  customer.nid = watchdog.nid WHERE watchdog.uid=%d AND timestamp BETWEEN UNIX_TIMESTAMP('2012-07-25 00:00:00') AND UNIX_TIMESTAMP('2012-07-26 23:59:59') AND message NOT LIKE '%(4)%' AND message NOT LIKE '%(11)%' AND message NOT LIKE '%(5)%' AND message NOT LIKE '%(12)%' AND message NOT LIKE '%(7)%' AND message NOT LIKE '%(8)%'";
+$result = db_query($sql,21);
+while($row = db_fetch_array($result)){
+  $c+=1;
+  echo "<tr>";
+  echo "<td>".$c."";
+  echo "<td>".$row['field_customer_webiz_domain_value']."</td>";
+  echo "<td>".$row['field_customer_admin_name_value']."</td>";
+  echo "<td>".$row['field_customer_email_value']."</td>";
+  echo "<td>".$row['field_customer_phone_value']."</td>";
+}*/
 ?>
 
 </table>

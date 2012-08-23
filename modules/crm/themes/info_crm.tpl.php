@@ -65,7 +65,7 @@
     </tr>
     <tr>
        <td>ชื่อ-นามสกุล</td>
-       <td><?php echo $node->field_customer_admin_name[0][value]?></td>
+       <td><?php echo $node->field_customer_owner_name[0][value]?></td>
     </tr>
     <tr>
        <td>เบอร์โทรศัพท์</td>

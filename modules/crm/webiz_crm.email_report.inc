@@ -191,4 +191,26 @@ function webiz_crm_register_report($send=0){ //palm report
   exit;
 }
 
+function webiz_crm_published_pass_report($send=0){
+  $vars = array();
+  $last_month = ((date('n') - 1) % 12).' '.date('Y');//date('m Y',strtotime("-1 month")); 
+  $last_month_array = explode(' ',$last_month);
+  $this_month = date('m Y');
+  $this_month_array = explode(' ',$this_month);
+  
+  $vars['last_month'] = $last_month_array;
+  $vars['this_month'] = $this_month_array;
+
+  echo  $result = theme_render_template(drupal_get_path('module','webiz_crm').'/themes/published_pass_report.tpl.php',$vars);
+    if($send==1):
+      $subject = 'สรุปผลการติดตามยอดเผยแพร่';
+      //$to = 'cc@webiz.co.th,developer@webiz.co.th,pornthip@google.com,chayatat@google.com'; 
+      $to = 'palm@webiz.co.th';                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+      $from = 'crm@webiz.co.th';
+      $language = 'th';     
+      drupal_mail('webiz_crm','mail',$to , $language, array('body' => $result, 'subject' => $subject), $from, TRUE); //mail
+    endif;
+  exit;  
+}
+
 ?>

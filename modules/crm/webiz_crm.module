@@ -2,9 +2,10 @@
 
 include_once('webiz_crm.features.inc');
 include_once('webiz_crm.note.inc');
-include_once('webiz_crm.quality_score_api.inc');
 include_once('webiz_crm.email_report.inc');
-include_once('webiz_crm.last_graph_published.inc');
+include_once('webiz_crm.quality_score_api.inc');// johnny author
+include_once('webiz_crm.last_graph_published.inc'); // johnny author
+include_once('webiz_crm.graph_quality_check_pass.inc'); // johnny author
 include_once('webiz_crm.mobile.inc');
 
 function webiz_crm_menu(){
@@ -200,6 +201,13 @@ function webiz_crm_menu(){
   		'type' => MENU_CALLBACK,
   		'access callback' => TRUE
   	);// palm report published
+  	$items['report/published_pass'] = array(
+  		'title' => 'รายงานเผยแพร่แล้วผ่านการตรวจสอบ',
+  		'description' => t("crm published pass report"),
+  		'page callback' => 'webiz_crm_published_pass_report',
+  		'type' => MENU_CALLBACK,
+  		'access callback' => TRUE
+  	);// palm report published pass
   	$items['report/callcenter_log_score_v1'] = array(
   		'title' => 'crm quality score',
   		'description' => t("crm quality score"),
@@ -207,6 +215,13 @@ function webiz_crm_menu(){
   		'type' => MENU_CALLBACK,
   		'access callback' => TRUE
   	);//  johnny report quality score
+  	$items['report/quality_check_pass_graph'] = array(
+  		'title' => 'crm quality check pass graph',
+  		'description' => t("crm quality check graph"),
+  		'page callback' => 'webiz_crm_quality_check_pass_graph',
+  		'type' => MENU_CALLBACK,
+  		'access callback' => TRUE
+  	);//  johnny report quality pass graph
     $items['mobile/case'] = array(
       'title' => 'Mobile Case',
       'description' => t("Case Form Webiz Mobile"),
@@ -626,6 +641,8 @@ function webiz_crm_syn_data() {
       $value['bizdescription'] = $row['bizdescription'];
       $value['final_url_used'] = $row['final_url_used'];
       $value['webiz_domain'] = $node->field_customer_webiz_domain[0]['value'];
+      if( $value['field_site_optin_gmail_value'] != NULL) $node->field_customer_optin_gmail[0]['value'] = $value['field_site_optin_gmail_value'];
+      if( $value['field_site_optin_gplac_value'] != NULL) $node->field_customer_optin_gplace[0]['value'] = $value['field_site_optin_gplac_value'];
       //echo "<pre>";print_r($node);echo "</pre>";exit;
     } else {
       //echo "not found";
@@ -646,20 +663,20 @@ function webiz_crm_syn_data() {
       db_query("INSERT INTO {webiz_crm_gxbo_xml_data} VALUES (%d,'%s','%s',%d) ",$value['user_id'],$value['owner_name'],$value['bizdescription'],$value['final_url_used']);
     }    
     $node->title = $value['bizname'];
-  	$node->field_customer_biztype[0]['value'] = $value['biztype'];	 	 	
-    $node->field_customer_bizcat[0]['value'] = $value['bizcat']; 	 	 	
-    $node->field_customer_admin_name[0]['value'] = $value['admin_name'];	 	 	 	 	
-    $node->field_customer_admin_phone[0]['value'] = $value['admin_phone'];	 	 	 	 	 	
+  	$node->field_customer_biztype[0]['value'] = $value['biztype'];
+    $node->field_customer_bizcat[0]['value'] = $value['bizcat']; 
+    $node->field_customer_admin_name[0]['value'] = $value['admin_name'];
+    $node->field_customer_admin_phone[0]['value'] = $value['admin_phone'];
     $node->field_customer_admin_email[0]['value'] = $value['admin_email'];
-    $node->field_customer_address[0]['value'] = $value['address']; 	 	 	 	 	
+    $node->field_customer_address[0]['value'] = $value['address']; 
     $node->field_customer_zipcode[0]['value'] = $value['zipcode'];
-    $node->field_customer_province[0]['value'] = $value['province'];	 	 	 	 	
+    $node->field_customer_province[0]['value'] = $value['province'];
     $node->field_customer_district[0]['value'] = $value['district'];
-    $node->field_customer_subdistrict[0]['value'] = $value['subdistrict'];	 	 	 	 	
+    $node->field_customer_subdistrict[0]['value'] = $value['subdistrict'];
     $node->field_customer_latitude[0]['value'] = $value['latitude'];
-    $node->field_customer_longitude[0]['value'] = $value['longitude'];	 	 	 	 	 	
-    $node->field_customer_phone[0]['value'] = $value['telephone']; 	 	
-    $node->field_customer_email[0]['value'] = $value['user_mail'];	 	 	 	 	
+    $node->field_customer_longitude[0]['value'] = $value['longitude'];
+    $node->field_customer_phone[0]['value'] = $value['telephone']; 
+    $node->field_customer_email[0]['value'] = $value['user_mail'];
     $node->field_customer_custom_domain[0]['value'] = $value['field_site_domain_value'];
     $node->field_customer_active_domain[0]['value'] = $value['field_site_active_domain_value'];
     if($node->field_customer_user_agent[count($node->field_customer_user_agent)-1]['value'] != $value['field_site_user_agent_value'])
@@ -672,6 +689,12 @@ function webiz_crm_syn_data() {
     if($value['status']==1) $GTBO_array[] = $value;
   }
   //webiz_crm_GTBO_xml_post($GTBO_array);
+  //palm new log
+  
+  db_set_active('webiz_crm_cc');
+  db_query("INSERT INTO {watchdog_change_profile} VALUES (%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s',%d,'%s','%s',%d) ",'',$node->nid,$value['address'],$value['admin_email'],$value['admin_name'],$value['admin_phone'],$value['user_mail'],$value['telephone'],$value['user_id'],$value['field_site_domain_value'],$value['signup_date'],$value['webiz_domain'],$value['owner_name'],time());
+  db_set_active('default');
+  
   return;
 }
 
@@ -925,19 +948,24 @@ function webiz_crm_gtbo_excel_export(){
   $strFileName = "gtbo/gtbo".date('Y-m-d').".csv";
   $fhandle = fopen($strFileName, 'w');
   $header =  '"โดเมน","webiz โดเมน","Active Domain","ชื่อ - นามสกุล","เบอร์โทรศัพท์","อีเมล","ชื่อบริษัท","หมวดหมู่ธุรกิจ","สถานะโดเมน","เลขที่","แขวง","เขต","จังหวัด","รหัสไปรษณีย์","latitude","longitude","วันที่สมัคร"' ."\n";*/
-  $strFileName = "gtbo/gtbo".date('Y-m-d').".csv";
+  require('publishedtime.php');
+  echo $published[0];
+  $date_format = "Ymd\THis\Z";
+  $strFileName = "gtbo/csv/gtbo".date('Y-m-d').".csv";
   $fhandle = fopen($strFileName, 'w');
   $header =  '"partner-reference","sign-up-date","given-name","family-name"'.
   ',"email","phone-number","language","temporary-url","temporary-url-being-used","temporary-url-publish-date"'.
   ',"final-url","final-url-being-used","final-url-publish-date","searchable","business-name","business-description","market-segments"'.
   '"address-line-1","city","post-code","latitude","longitude","opt-in-email","opt-in-post","opt-in-places","account-deleted"' ."\n";
   fwrite($fhandle, $header);
-   $nid_result = db_query("SELECT n.nid FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
-   WHERE ctc.field_website_quality_value IS NOT NULL ORDER BY n.changed ");//200,100);// and ctc.field_customer_site_status_value = 0
+/*   $nid_result = db_query("SELECT DISTINCT (n.nid) FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
+   WHERE ctc.field_website_quality_value = 'pass' ORDER BY n.changed ");*///200,100);// and ctc.field_customer_site_status_value = 0
+   $nid_result = db_query("SELECT DISTINCT (n.nid) FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
+   WHERE ctc.field_website_quality_value = 'pass' and ctc.field_customer_site_status_value = 1 ORDER BY ctc.field_customer_webiz_id_value ASC ");//200,100);// and ctc.field_customer_site_status_value = 0
 //     $nid_result = db_query("SELECT n.nid FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
 //     WHERE ctc.field_website_quality_value IS NOT NULL LIMIT %d,%d;",$start,$per_round);//200,100);//test
    // create XML payload
-     
+/*     
    while($row =  db_fetch_array($nid_result)) {
      $node = node_load($row['nid'], NULL, TRUE);
      $sql = "SELECT gxbo.*  FROM {webiz_crm_gxbo_xml_data as gxbo} WHERE gxbo.uid = %d";
@@ -982,6 +1010,57 @@ function webiz_crm_gtbo_excel_export(){
       $record .= ',"False"' ."\n";
       fwrite($fhandle, $record);
     }
+*/
+  while($row =  db_fetch_array($nid_result)) {
+    $node = node_load($row['nid'], NULL, TRUE);
+    $sql = "SELECT gxbo.*  FROM {webiz_crm_gxbo_xml_data as gxbo} WHERE gxbo.uid = %d";
+    $name_and_desc = db_fetch_array(db_query($sql,$node->field_customer_webiz_id[0]['value']));
+    $owner_name = $name_and_desc['owner_name'];
+    if($owner_name == '') $owner_name = $node->field_customer_admin_name[0]['value'];
+    $bizdescription = $name_and_desc['bizdescription'];
+     $record = '';
+     $record .= '"'. $node->field_customer_partner_ref[0]['value'] .'"';
+     $record .= ',"'.date($date_format,$node->field_customer_signup_date[0]['value']).'"';
+     $owner_name = explode (' ',$owner_name);
+     $record .= ',"'.webiz_crm_urlencode($owner_name[0]).'"';
+     $record .= ',"'.webiz_crm_urlencode($owner_name[1]).'"';
+     $record .= ',"'.$node->field_customer_email[0]['value'].'"';
+     $record .= ',"'.$node->field_customer_phone[0]['value'].'"';
+     $record .= ',"th"';
+
+     $record .= ',"http://'.$node->field_customer_webiz_domain[0]['value'].'"';
+     $record .= ',"'. ($node->field_customer_site_status[0]['value'] == 1 ? '1' : '0').'"';
+     #echo $node->field_customer_webiz_id[0]['value'] .'---'.$published[$node->field_customer_webiz_id[0]['value']] . "\n";
+     if (array_key_exists($node->field_customer_webiz_id[0]['value'], $published )) {
+       $record .= ',"'. date($date_format, $published[$node->field_customer_webiz_id[0]['value']] ). '"';
+     }else {
+       $record .= ',""';
+       //$record .= ',"'. date($date_format, $node->field_customer_signup_date[0]['value']). '"';
+     }
+     $record .= ',"http://'.$node->field_customer_custom_domain[0]['value'].'"';
+     $record .= ',"'. ($node->field_customer_domain_status[0]['value'] ? '1' : '0').'"';
+     $record .= ',"'. date($date_format, $node->changed ).'"';
+     $record .= ',"1"';
+     $record .= ',"'. $node->title.'"';
+     $record .= ',"'. $bizdescription .'"';
+     $market_segment = explode(' - ',$node->field_customer_bizcat[0]['value']);
+     $record .= ',"'. '<segment>'.$market_segment[0].'</segment>'. 
+                      ($market_segment[1] ? '<segment>'.$market_segment[1].'</segment>' :'') .'"';
+     $address_line1 = $node->field_customer_address[0]['value'] .' ' . $node->field_customer_subdistrict[0]['value'] .' '. $node->field_customer_district[0]['value'];
+     $record .= ',"'. $address_line1 .'"';
+     $record .= ',"'. $node->field_customer_province[0]['value'].'"';
+     $record .= ',"'. $node->field_customer_zipcode[0]['value'].'"';
+     $record .= ',"'. $node->field_customer_latitude[0]['value'].'"';
+     $record .= ',"'. $node->field_customer_longitude[0]['value'].'"';
+
+
+     $record .= ',"'. ($node->field_customer_optin_gmail[0]['value'] ? '1' : '0').'"';
+     $record .= ',"'. ($node->field_customer_optin_gmail[0]['value'] ? '1' : '0').'"';
+     $record .= ',"'. ($node->field_customer_optin_gplace[0]['value'] ? '1' : '0').'"';
+     $record .= ',"0"' ."\n";
+     fwrite($fhandle, $record);
+   }
+
 /*  fwrite($fhandle, $header);
   $result = db_query($sql);
   while($row = db_fetch_array($result)){
@@ -1333,6 +1412,8 @@ function webiz_crm_xml_repost(){
    $xml_post_url = "https://gxbo-thailand-hr.appspot.com/submit_xml";
    //$xml_post_url = "https://gxbo-test-xml.appspot.com/submit_xml";//test
    //$post_status = 'published'; // just set status here
+   $strFileName = "gtbo/log/feed-".date('Y-m-d').".xml";
+   $fhandle = fopen($strFileName, 'a');
    
    $old_last_update = variable_get('webiz_crm_gxbo_last_update',0);
    $last_update = $old_last_update;
@@ -1341,17 +1422,17 @@ function webiz_crm_xml_repost(){
    //$xml_post_url = "http://webiz.co.th/sites/crm.webiz.co.th/modules/crm/post.php";
    $secret_key = "90c6a0f677fc4fc7bff9c87cb325eb30";
    //$secret_key = "c8cd79fcf2b849f18f311e3d08aa6575";//test
-   $customer_count =  db_result(db_query("SELECT count(*) FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid)
-    WHERE ctc.field_website_quality_value IS NOT NULL  and n.changed > %d ;",$old_last_update)); //and ctc.field_website_quality_value = 'published'// and ctc.field_customer_site_status_value = 0
-   $per_round = 100;//echo $customer_count;exit;
+   $customer_count =  db_result(db_query("SELECT count(DISTINCT (n.nid)) FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid)
+    WHERE ctc.field_website_quality_value = 'pass'  and n.changed > %d ;",$old_last_update)); //and ctc.field_website_quality_value = 'published'// and ctc.field_customer_site_status_value = 0niceradio.in.th
+   $per_round = 100;// echo $customer_count;exit;
    $loop = $customer_count/$per_round ;echo $loop. 'pages left';//exit;
    $begin = 0;
    $reach = $loop;
    //$reach = ;
    for($i= $begin;$i < $reach;$i++) {
        $start = $i*100;
-       $nid_result = db_query("SELECT n.nid FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
-       WHERE ctc.field_website_quality_value IS NOT NULL and n.changed > %d  ORDER BY n.changed ASC LIMIT %d,%d;",$old_last_update,$start,$per_round);//200,100);// and ctc.field_customer_site_status_value = 0
+       $nid_result = db_query("SELECT DISTINCT (n.nid) FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
+       WHERE ctc.field_website_quality_value = 'pass' and n.changed > %d  ORDER BY n.changed ASC LIMIT %d,%d;",$old_last_update,$start,$per_round);//200,100);// and ctc.field_customer_site_status_value = 0
   //     $nid_result = db_query("SELECT n.nid FROM {node n} inner join {content_type_customer ctc} on (n.nid=ctc.nid) 
   //     WHERE ctc.field_website_quality_value IS NOT NULL LIMIT %d,%d;",$start,$per_round);//200,100);//test
        // create XML payload
@@ -1436,12 +1517,13 @@ function webiz_crm_xml_repost(){
                          '<spain-web-created>1</spain-web-created>'.
                          '<spain-acquisition-channel></spain-acquisition-channel>';
          $xml_payload .= '</business>';              
-         //TODO : update $last_update
+
          if($node->changed > $last_update ) $last_update = $node->changed; 
        }             
        $xml_payload .= '</businesses>';
+       fwrite($fhandle, $xml_payload);
        echo "\n".'<br><br>'.$i .' page,';
-       //echo $xml_payload ; //exit;
+       //echo $xml_payload ; // exit;
        $ch = curl_init(); 
        curl_setopt($ch, CURLOPT_URL, $xml_post_url); 
        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
@@ -1452,7 +1534,7 @@ function webiz_crm_xml_repost(){
        curl_setopt($ch, CURLOPT_SSLVERSION,3);
        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,  2);
-        $result = curl_exec($ch); // echo $result;exit;
+        $result = curl_exec($ch); //echo $result;exit;//
         watchdog('gxbo_post_result', 'result=@result:::::xml=@xml', array('@result' => $result, '@xml' => $xml_payload), WATCHDOG_NOTICE);
       //echo $result;
        if ( curl_errno($ch) ) {  $result = 'ERROR -> ' . curl_errno($ch) . ': ' . curl_error($ch).'';
@@ -1472,7 +1554,8 @@ function webiz_crm_xml_repost(){
        curl_close($ch);
        //exit;
    }
-   db_query("UPDATE content_type_customer SET field_website_quality_value =  'pass' WHERE field_website_quality_value = 'published'");
+   fclose($fhandle);
+   //db_query("UPDATE content_type_customer SET field_website_quality_value =  'pass' WHERE field_website_quality_value = 'published'");
   
    exit;return; 
 }
@@ -1565,10 +1648,12 @@ function webiz_crm_note_call(){
 
 function webiz_crm_hunt_quality(){
   $nid = (int) $_REQUEST['nid'];
+  $timestamp=time();
   if($nid > 0){
     $result = db_result(db_query("SELECT field_website_quality_value FROM {content_type_customer} WHERE nid=%d",$nid));
     $to = ($result == 'published') ? 'pass' : 'published';
     db_query("UPDATE {content_type_customer} SET `field_website_quality_value`='%s' WHERE nid=%d",$to,$nid);
+    if($to == 'pass') : db_query("UPDATE {content_type_customer} SET `field_quality_checked_timpstamp`='%d' WHERE nid=%d",$timestamp,$nid); endif;
     echo $to;
   }
 }
